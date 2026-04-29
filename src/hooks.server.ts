@@ -1,7 +1,11 @@
 import type { Handle } from '@sveltejs/kit';
 import { validateSession } from '$lib/server/auth';
+import { startScheduler } from '$lib/server/scheduler';
 
 const SESSION_COOKIE = 'session';
+
+// Start the service check scheduler once when the server boots
+startScheduler();
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const sessionId = event.cookies.get(SESSION_COOKIE);

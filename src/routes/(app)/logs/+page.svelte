@@ -1,124 +1,242 @@
 <script lang="ts">
-	type Level = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
+	import type { PageData } from './$types';
 
-	const allLogs: { id: number; timestamp: string; level: Level; service: string; message: string }[] = [
-		{ id: 1, timestamp: '2026-04-17 14:52:03', level: 'INFO', service: 'Proxmox', message: 'Sauvegarde de la VM-101 (web-server) terminée avec succès' },
-		{ id: 2, timestamp: '2026-04-17 14:49:11', level: 'WARN', service: 'Grafana', message: 'Temps de réponse anormalement élevé : 230ms (seuil : 100ms)' },
-		{ id: 3, timestamp: '2026-04-17 14:45:00', level: 'ERROR', service: 'GitLab', message: 'Échec de connexion au service - timeout après 30s' },
-		{ id: 4, timestamp: '2026-04-17 14:40:22', level: 'INFO', service: 'Nextcloud', message: 'Synchronisation des fichiers utilisateurs complète (1.2 GB)' },
-		{ id: 5, timestamp: '2026-04-17 14:38:17', level: 'INFO', service: 'OPNsense', message: 'Mise à jour des règles de pare-feu appliquée' },
-		{ id: 6, timestamp: '2026-04-17 14:30:05', level: 'DEBUG', service: 'Prometheus', message: 'Collecte des métriques Proxmox : 42 séries récupérées' },
-		{ id: 7, timestamp: '2026-04-17 14:22:44', level: 'ERROR', service: 'GitLab', message: 'Service toujours inaccessible - tentative de redémarrage en cours' },
-		{ id: 8, timestamp: '2026-04-17 14:15:30', level: 'INFO', service: 'Portainer', message: 'Conteneur "nginx-proxy" redémarré automatiquement (healthcheck)' },
-		{ id: 9, timestamp: '2026-04-17 14:10:02', level: 'WARN', service: 'Proxmox', message: 'Espace disque nœud pve-02 : 78% utilisé (seuil d\'alerte : 75%)' },
-		{ id: 10, timestamp: '2026-04-17 14:05:18', level: 'INFO', service: 'Vaultwarden', message: 'Sauvegarde quotidienne de la base de données chiffrée' },
-		{ id: 11, timestamp: '2026-04-17 14:00:00', level: 'INFO', service: 'Système', message: 'Vérification automatique programmée démarrée' },
-		{ id: 12, timestamp: '2026-04-17 13:55:41', level: 'DEBUG', service: 'Nextcloud', message: 'Nettoyage des fichiers temporaires : 340 MB libérés' },
-		{ id: 13, timestamp: '2026-04-17 13:50:09', level: 'INFO', service: 'OPNsense', message: 'Certificat TLS renouvelé pour *.infra.local (Let\'s Encrypt)' },
-		{ id: 14, timestamp: '2026-04-17 13:42:55', level: 'WARN', service: 'Grafana', message: 'Datasource Prometheus : délai de scraping augmenté' },
-		{ id: 15, timestamp: '2026-04-17 13:30:00', level: 'INFO', service: 'Système', message: 'Tous les services vérifiés - 6/8 opérationnels' }
-	];
+	let { data }: { data: PageData } = $props();
 
-	const levels: (Level | 'Tous')[] = ['Tous', 'INFO', 'WARN', 'ERROR', 'DEBUG'];
-	const services = ['Tous', ...new Set(allLogs.map((l) => l.service))];
-
-	let filterLevel = $state<Level | 'Tous'>('Tous');
-	let filterService = $state('Tous');
-	let search = $state('');
-
-	const filtered = $derived(
-		allLogs.filter((log) => {
-			if (filterLevel !== 'Tous' && log.level !== filterLevel) return false;
-			if (filterService !== 'Tous' && log.service !== filterService) return false;
-			if (search && !log.message.toLowerCase().includes(search.toLowerCase())) return false;
-			return true;
-		})
-	);
-
-	const levelStyle: Record<Level, string> = {
-		INFO: 'bg-blue-400/10 text-blue-400',
-		WARN: 'bg-yellow-400/10 text-yellow-400',
-		ERROR: 'bg-red-400/10 text-red-400',
-		DEBUG: 'bg-slate-400/10 text-slate-400'
+	const ACTION_LABELS: Record<string, string> = {
+		'auth.login.success': 'Connexion reussie',
+		'auth.login.failure': 'Echec de connexion',
+		'auth.logout': 'Deconnexion',
+		'user.create': 'Compte cree',
+		'user.activate': 'Compte active',
+		'user.deactivate': 'Compte desactive',
+		'user.delete': 'Compte supprime',
+		'user.password_reset': 'MDP reinitialise',
+		'user.profile_update': 'Profil modifie',
+		'user.password_change': 'MDP modifie'
 	};
 
-	const levelDot: Record<Level, string> = {
-		INFO: 'bg-blue-400',
-		WARN: 'bg-yellow-400',
-		ERROR: 'bg-red-400',
-		DEBUG: 'bg-slate-400'
+	const ACTION_STYLE: Record<string, string> = {
+		'auth.login.success': 'bg-green-400/10 text-green-400',
+		'auth.login.failure': 'bg-red-400/10 text-red-400',
+		'auth.logout': 'bg-slate-400/10 text-slate-400',
+		'user.create': 'bg-blue-400/10 text-blue-400',
+		'user.activate': 'bg-green-400/10 text-green-400',
+		'user.deactivate': 'bg-yellow-400/10 text-yellow-400',
+		'user.delete': 'bg-red-400/10 text-red-400',
+		'user.password_reset': 'bg-orange-400/10 text-orange-400',
+		'user.profile_update': 'bg-blue-400/10 text-blue-400',
+		'user.password_change': 'bg-orange-400/10 text-orange-400'
+	};
+
+	const LEVEL_STYLE: Record<string, string> = {
+		INFO: 'bg-blue-400/10 text-blue-400',
+		WARN: 'bg-yellow-400/10 text-yellow-400',
+		ERROR: 'bg-red-400/10 text-red-400'
+	};
+
+	const ALL_ACTIONS = Object.keys(ACTION_LABELS);
+	const LEVELS = ['INFO', 'WARN', 'ERROR'];
+
+	let filterAction = $state('');
+	let filterService = $state('');
+	let filterLevel = $state('');
+	let filterFrom = $state('');
+	let filterTo = $state('');
+
+	$effect(() => {
+		filterAction = data.filters.action;
+		filterService = data.filters.service;
+		filterLevel = data.filters.level;
+		filterFrom = data.filters.from;
+		filterTo = data.filters.to;
+	});
+
+	const formatDate = (d: Date | null) =>
+		d ? new Date(d).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '-';
+
+	const formatActor = (log: (typeof data.auditLogs)[number]) =>
+		log.actorUsername ? (log.actorDisplayName ?? log.actorUsername) : 'Systeme';
+
+	const buildUrl = (overrides: Record<string, string | number>) => {
+		const p = new URLSearchParams();
+		p.set('tab', data.tab);
+		if (filterAction) p.set('action', filterAction);
+		if (filterService) p.set('service', filterService);
+		if (filterLevel) p.set('level', filterLevel);
+		if (filterFrom) p.set('from', filterFrom);
+		if (filterTo) p.set('to', filterTo);
+		Object.entries(overrides).forEach(([k, v]) => p.set(k, String(v)));
+		return `/logs?${p.toString()}`;
 	};
 </script>
 
 <div class="p-8">
 	<header class="mb-8">
 		<h1 class="text-2xl font-bold text-white">Journaux</h1>
-		<p class="mt-1 text-sm text-slate-400">Historique des événements système</p>
+		<p class="mt-1 text-sm text-slate-400">Acces reserve aux administrateurs</p>
 	</header>
 
+	<!-- Onglets -->
+	<div class="mb-6 flex gap-1 rounded-xl border border-slate-800 bg-slate-900 p-1 w-fit">
+		<a
+			href="/logs?tab=audit"
+			class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {data.tab === 'audit' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'}"
+		>
+			Activite intranet
+		</a>
+		<a
+			href="/logs?tab=services"
+			class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {data.tab === 'services' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'}"
+		>
+			Journaux services
+		</a>
+	</div>
+
 	<!-- Filtres -->
-	<div class="mb-6 flex flex-wrap gap-3">
-		<input
-			type="text"
-			bind:value={search}
-			placeholder="Rechercher dans les messages..."
-			class="flex-1 min-w-48 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white placeholder-slate-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
-		/>
+	<form method="get" class="mb-6 flex flex-wrap gap-3">
+		<input type="hidden" name="tab" value={data.tab} />
 
-		<select
-			bind:value={filterLevel}
-			class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
-		>
-			{#each levels as lvl}
-				<option value={lvl}>{lvl}</option>
-			{/each}
-		</select>
-
-		<select
-			bind:value={filterService}
-			class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
-		>
-			{#each services as svc}
-				<option value={svc}>{svc}</option>
-			{/each}
-		</select>
-	</div>
-
-	<!-- Compteur résultats -->
-	<p class="mb-3 text-xs text-slate-500">{filtered.length} entrée{filtered.length > 1 ? 's' : ''}</p>
-
-	<!-- Logs -->
-	<div class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
-		{#if filtered.length === 0}
-			<div class="py-16 text-center text-slate-500">
-				Aucun journal ne correspond aux filtres sélectionnés.
-			</div>
+		{#if data.tab === 'audit'}
+			<select name="action" bind:value={filterAction}
+				class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none">
+				<option value="">Toutes les actions</option>
+				{#each ALL_ACTIONS as action}
+					<option value={action}>{ACTION_LABELS[action]}</option>
+				{/each}
+			</select>
 		{:else}
-			<table class="w-full">
-				<thead>
-					<tr class="border-b border-slate-800">
-						<th class="w-44 px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Horodatage</th>
-						<th class="w-24 px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Niveau</th>
-						<th class="w-32 px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Service</th>
-						<th class="px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Message</th>
-					</tr>
-				</thead>
-				<tbody class="divide-y divide-slate-800/50">
-					{#each filtered as log}
-						<tr class="hover:bg-slate-800/30 transition-colors">
-							<td class="px-6 py-3.5 font-mono text-xs text-slate-500">{log.timestamp}</td>
-							<td class="px-4 py-3.5">
-								<span class="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium {levelStyle[log.level]}">
-									<span class="h-1.5 w-1.5 rounded-full {levelDot[log.level]}"></span>
-									{log.level}
-								</span>
-							</td>
-							<td class="px-4 py-3.5 text-sm text-slate-400">{log.service}</td>
-							<td class="px-6 py-3.5 text-sm text-slate-200">{log.message}</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
+			<select name="service" bind:value={filterService}
+				class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none">
+				<option value="">Tous les services</option>
+				{#each data.serviceList as svc}
+					<option value={svc.id}>{svc.name}</option>
+				{/each}
+			</select>
+			<select name="level" bind:value={filterLevel}
+				class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none">
+				<option value="">Tous les niveaux</option>
+				{#each LEVELS as lvl}
+					<option value={lvl}>{lvl}</option>
+				{/each}
+			</select>
 		{/if}
-	</div>
+
+		<input type="date" name="from" bind:value={filterFrom}
+			class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+		<input type="date" name="to" bind:value={filterTo}
+			class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+
+		<button type="submit"
+			class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500">
+			Filtrer
+		</button>
+		<a href="/logs?tab={data.tab}"
+			class="rounded-lg px-4 py-2 text-sm text-slate-400 hover:bg-slate-800">
+			Reinitialiser
+		</a>
+	</form>
+
+	<!-- Contenu onglet audit -->
+	{#if data.tab === 'audit'}
+		<div class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
+			{#if data.auditLogs.length === 0}
+				<div class="py-16 text-center text-slate-500">Aucun journal ne correspond aux filtres.</div>
+			{:else}
+				<table class="w-full">
+					<thead>
+						<tr class="border-b border-slate-800">
+							<th class="w-44 px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Date</th>
+							<th class="px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Action</th>
+							<th class="px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Acteur</th>
+							<th class="px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Cible / Detail</th>
+							<th class="px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">IP</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-slate-800/50">
+						{#each data.auditLogs as log}
+							<tr class="transition-colors hover:bg-slate-800/30">
+								<td class="px-6 py-3.5 font-mono text-xs text-slate-500">{formatDate(log.createdAt)}</td>
+								<td class="px-4 py-3.5">
+									<span class="rounded px-2 py-0.5 text-xs font-medium {ACTION_STYLE[log.action] ?? 'bg-slate-700 text-slate-300'}">
+										{ACTION_LABELS[log.action] ?? log.action}
+									</span>
+								</td>
+								<td class="px-4 py-3.5 text-sm text-slate-300">{formatActor(log)}</td>
+								<td class="px-4 py-3.5 text-sm text-slate-400">
+									{#if log.metadata && typeof log.metadata === 'object'}
+										{@const meta = log.metadata as Record<string, unknown>}
+										{#if meta.username}<span class="text-slate-300">@{meta.username}</span>{/if}
+										{#if meta.role}<span class="ml-2 text-xs text-slate-500">({meta.role})</span>{/if}
+										{#if meta.reason}<span class="text-slate-500">{meta.reason}</span>{/if}
+									{/if}
+								</td>
+								<td class="px-6 py-3.5 font-mono text-xs text-slate-500">{log.ipAddress ?? '-'}</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+				<div class="flex items-center justify-between border-t border-slate-800 px-6 py-4">
+					<span class="text-xs text-slate-500">Page {data.page}</span>
+					<div class="flex gap-2">
+						{#if data.page > 1}
+							<a href={buildUrl({ page: data.page - 1 })} class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">Precedent</a>
+						{/if}
+						{#if data.hasMore}
+							<a href={buildUrl({ page: data.page + 1 })} class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">Suivant</a>
+						{/if}
+					</div>
+				</div>
+			{/if}
+		</div>
+
+	<!-- Contenu onglet services -->
+	{:else}
+		<div class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
+			{#if data.serviceLogs.length === 0}
+				<div class="py-16 text-center text-slate-500">
+					Aucun journal de service disponible.
+					{#if data.serviceList.length > 0}
+						<p class="mt-2 text-xs">La collecte SSH tourne toutes les 5 minutes depuis le serveur de production.</p>
+					{/if}
+				</div>
+			{:else}
+				<table class="w-full">
+					<thead>
+						<tr class="border-b border-slate-800">
+							<th class="w-44 px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Horodatage</th>
+							<th class="w-24 px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Niveau</th>
+							<th class="w-32 px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Service</th>
+							<th class="px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Message</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-slate-800/50">
+						{#each data.serviceLogs as log}
+							<tr class="transition-colors hover:bg-slate-800/30">
+								<td class="px-6 py-3.5 font-mono text-xs text-slate-500">{formatDate(log.loggedAt)}</td>
+								<td class="px-4 py-3.5">
+									<span class="rounded px-2 py-0.5 text-xs font-medium {LEVEL_STYLE[log.level] ?? 'bg-slate-700 text-slate-300'}">
+										{log.level}
+									</span>
+								</td>
+								<td class="px-4 py-3.5 text-sm text-slate-400">{log.serviceName ?? '-'}</td>
+								<td class="px-6 py-3.5 text-sm text-slate-200">{log.message}</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+				<div class="flex items-center justify-between border-t border-slate-800 px-6 py-4">
+					<span class="text-xs text-slate-500">Page {data.page}</span>
+					<div class="flex gap-2">
+						{#if data.page > 1}
+							<a href={buildUrl({ page: data.page - 1 })} class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">Precedent</a>
+						{/if}
+						{#if data.hasMore}
+							<a href={buildUrl({ page: data.page + 1 })} class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">Suivant</a>
+						{/if}
+					</div>
+				</div>
+			{/if}
+		</div>
+	{/if}
 </div>
