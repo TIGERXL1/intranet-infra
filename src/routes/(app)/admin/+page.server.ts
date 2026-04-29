@@ -3,7 +3,8 @@ import type { Actions, PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { createUser, hashPassword, validatePasswordStrength } from '$lib/server/auth';
-import { eq, ne, count } from 'drizzle-orm';
+import { writeAuditLog } from '$lib/server/audit';
+import { eq, count } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user?.role !== 'admin') redirect(302, '/dashboard');
@@ -25,8 +26,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	create: async ({ request, locals }) => {
-		if (locals.user?.role !== 'admin') return fail(403, { createError: 'Accès refusé.' });
+	create: async ({ request, locals, getClientAddress }) => {
+		if (locals.user?.role !== 'admin') return fail(403, { createError: 'Acces refuse.' });
 
 		const data = await request.formData();
 		const username = (data.get('username') as string | null)?.trim() ?? '';
@@ -35,7 +36,7 @@ export const actions: Actions = {
 		const role = (data.get('role') as string | null) ?? 'user';
 
 		if (!username || username.length < 3) {
-			return fail(400, { createError: "L'identifiant doit contenir au moins 3 caractères." });
+			return fail(400, { createError: "L'identifiant doit contenir au moins 3 caracteres." });
 		}
 		if (!/^[a-z0-9_-]+$/.test(username)) {
 			return fail(400, { createError: "L'identifiant ne peut contenir que des lettres minuscules, chiffres, - et _." });
@@ -48,7 +49,7 @@ export const actions: Actions = {
 			return fail(400, { createError: 'Les mots de passe ne correspondent pas.' });
 		}
 		if (role !== 'admin' && role !== 'user') {
-			return fail(400, { createError: 'Rôle invalide.' });
+			return fail(400, { createError: 'Role invalide.' });
 		}
 
 		const [existing] = await db
@@ -58,33 +59,45 @@ export const actions: Actions = {
 			.limit(1);
 
 		if (existing) {
-			return fail(409, { createError: 'Cet identifiant est déjà utilisé.' });
+			return fail(409, { createError: 'Cet identifiant est deja utilise.' });
 		}
 
-		await createUser({ username, password, role: role as 'admin' | 'user', createdBy: locals.user.id });
+		const newUserId = await createUser({
+			username,
+			password,
+			role: role as 'admin' | 'user',
+			createdBy: locals.user.id
+		});
+
+		await writeAuditLog({
+			actorId: locals.user.id,
+			action: 'user.create',
+			targetId: newUserId,
+			metadata: { username, role },
+			ipAddress: getClientAddress()
+		});
 
 		return { createSuccess: true };
 	},
 
-	toggleActive: async ({ request, locals }) => {
+	toggleActive: async ({ request, locals, getClientAddress }) => {
 		if (locals.user?.role !== 'admin') return fail(403, {});
 
 		const data = await request.formData();
 		const userId = data.get('userId') as string;
 
 		if (userId === locals.user.id) {
-			return fail(400, { toggleError: 'Vous ne pouvez pas désactiver votre propre compte.' });
+			return fail(400, { toggleError: 'Vous ne pouvez pas desactiver votre propre compte.' });
 		}
 
 		const [user] = await db
-			.select({ isActive: users.isActive, role: users.role })
+			.select({ isActive: users.isActive, role: users.role, username: users.username })
 			.from(users)
 			.where(eq(users.id, userId))
 			.limit(1);
 
 		if (!user) return fail(404, {});
 
-		// Prevent deactivating the last admin
 		if (user.role === 'admin' && user.isActive) {
 			const [{ value }] = await db
 				.select({ value: count() })
@@ -92,15 +105,25 @@ export const actions: Actions = {
 				.where(eq(users.role, 'admin'));
 
 			if (value <= 1) {
-				return fail(400, { toggleError: "Impossible de désactiver le dernier compte administrateur." });
+				return fail(400, { toggleError: 'Impossible de desactiver le dernier compte administrateur.' });
 			}
 		}
 
-		await db.update(users).set({ isActive: !user.isActive }).where(eq(users.id, userId));
+		const newState = !user.isActive;
+		await db.update(users).set({ isActive: newState }).where(eq(users.id, userId));
+
+		await writeAuditLog({
+			actorId: locals.user.id,
+			action: newState ? 'user.activate' : 'user.deactivate',
+			targetId: userId,
+			metadata: { username: user.username },
+			ipAddress: getClientAddress()
+		});
+
 		return {};
 	},
 
-	resetPassword: async ({ request, locals }) => {
+	resetPassword: async ({ request, locals, getClientAddress }) => {
 		if (locals.user?.role !== 'admin') return fail(403, {});
 
 		const data = await request.formData();
@@ -115,13 +138,32 @@ export const actions: Actions = {
 			return fail(400, { resetError: 'Les mots de passe ne correspondent pas.', resetUserId: userId });
 		}
 
+		const [user] = await db
+			.select({ username: users.username })
+			.from(users)
+			.where(eq(users.id, userId))
+			.limit(1);
+
+		if (!user) return fail(404, {});
+
 		const passwordHash = await hashPassword(newPassword);
-		await db.update(users).set({ passwordHash, failedAttempts: 0, lockedUntil: null }).where(eq(users.id, userId));
+		await db
+			.update(users)
+			.set({ passwordHash, failedAttempts: 0, lockedUntil: null })
+			.where(eq(users.id, userId));
+
+		await writeAuditLog({
+			actorId: locals.user.id,
+			action: 'user.password_reset',
+			targetId: userId,
+			metadata: { username: user.username },
+			ipAddress: getClientAddress()
+		});
 
 		return { resetSuccess: true, resetUserId: userId };
 	},
 
-	deleteUser: async ({ request, locals }) => {
+	deleteUser: async ({ request, locals, getClientAddress }) => {
 		if (locals.user?.role !== 'admin') return fail(403, {});
 
 		const data = await request.formData();
@@ -132,7 +174,7 @@ export const actions: Actions = {
 		}
 
 		const [user] = await db
-			.select({ role: users.role })
+			.select({ role: users.role, username: users.username })
 			.from(users)
 			.where(eq(users.id, userId))
 			.limit(1);
@@ -146,11 +188,20 @@ export const actions: Actions = {
 				.where(eq(users.role, 'admin'));
 
 			if (value <= 1) {
-				return fail(400, { deleteError: "Impossible de supprimer le dernier administrateur." });
+				return fail(400, { deleteError: 'Impossible de supprimer le dernier administrateur.' });
 			}
 		}
 
+		await writeAuditLog({
+			actorId: locals.user.id,
+			action: 'user.delete',
+			targetId: userId,
+			metadata: { username: user.username, role: user.role },
+			ipAddress: getClientAddress()
+		});
+
 		await db.delete(users).where(eq(users.id, userId));
+
 		return {};
 	}
 };
