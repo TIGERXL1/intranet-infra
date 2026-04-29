@@ -1,26 +1,9 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { enhance } from '$app/forms';
+	import type { ActionData } from './$types';
 
-	let username = $state('');
-	let password = $state('');
-	let error = $state('');
+	let { form }: { form: ActionData } = $props();
 	let loading = $state(false);
-
-	async function handleLogin(e: SubmitEvent) {
-		e.preventDefault();
-		loading = true;
-		error = '';
-
-		await new Promise((r) => setTimeout(r, 500));
-
-		if (username.trim() && password.trim()) {
-			sessionStorage.setItem('user', JSON.stringify({ username, name: username }));
-			goto('/dashboard');
-		} else {
-			error = 'Veuillez renseigner vos identifiants.';
-		}
-		loading = false;
-	}
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-slate-950 p-4">
@@ -37,18 +20,22 @@
 				</svg>
 			</div>
 			<h1 class="text-2xl font-bold text-white">Intranet</h1>
-			<p class="mt-1 text-sm text-slate-400">Connectez-vous pour accéder aux services</p>
 		</div>
 
 		<form
-			onsubmit={handleLogin}
+			method="post"
 			class="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-6"
+			use:enhance={() => {
+				loading = true;
+				return async ({ update }) => {
+					loading = false;
+					await update();
+				};
+			}}
 		>
-			{#if error}
-				<div
-					class="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400"
-				>
-					{error}
+			{#if form?.error}
+				<div class="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+					{form.error}
 				</div>
 			{/if}
 
@@ -58,10 +45,10 @@
 				</label>
 				<input
 					id="username"
+					name="username"
 					type="text"
-					bind:value={username}
-					placeholder="Votre identifiant"
 					autocomplete="username"
+					required
 					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
 				/>
 			</div>
@@ -72,10 +59,10 @@
 				</label>
 				<input
 					id="password"
+					name="password"
 					type="password"
-					bind:value={password}
-					placeholder="••••••••"
 					autocomplete="current-password"
+					required
 					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
 				/>
 			</div>
@@ -85,7 +72,7 @@
 				disabled={loading}
 				class="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
 			>
-				{loading ? 'Connexion en cours...' : 'Se connecter'}
+				{loading ? 'Connexion...' : 'Se connecter'}
 			</button>
 		</form>
 	</div>
