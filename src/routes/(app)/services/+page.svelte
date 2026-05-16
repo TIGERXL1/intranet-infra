@@ -1,70 +1,78 @@
 <script lang="ts">
-	const categories = ['Tous', 'Infrastructure', 'Réseau', 'Productivité', 'Monitoring', 'Développement'];
+	const categories = ['Tous', 'Infrastructure', 'Reseau', 'Annuaire', 'Cloud', 'Supervision'];
 
 	const services = [
 		{
 			id: 'proxmox',
 			name: 'Proxmox VE',
-			description: 'Plateforme de virtualisation open-source pour la gestion des VMs et conteneurs LXC.',
-			url: '#',
+			description: 'Hyperviseur de la maquette, hote des VMs et conteneurs du projet.',
+			url: 'https://192.168.1.33:8006',
 			category: 'Infrastructure',
-			online: true
+			status: 'Disponible',
+			external: true
 		},
 		{
 			id: 'opnsense',
 			name: 'OPNsense',
-			description: 'Pare-feu et routeur réseau avec interface web de configuration avancée.',
-			url: '#',
-			category: 'Réseau',
-			online: true
+			description: 'Routeur, pare-feu et passerelle NAT entre le reseau amont et le LAN projet.',
+			url: 'https://192.168.10.1',
+			category: 'Reseau',
+			status: 'Disponible',
+			external: true
 		},
 		{
-			id: 'nextcloud',
-			name: 'Nextcloud',
-			description: 'Plateforme de stockage et de partage de fichiers auto-hébergée.',
-			url: '#',
-			category: 'Productivité',
-			online: true
+			id: 'srv-dns',
+			name: 'SRV-DNS',
+			description: 'Serveur Bind9 pour la zone interne entreprise.local et les resolutions inverses.',
+			url: '/status',
+			category: 'Reseau',
+			status: 'Monitore',
+			external: false
 		},
 		{
-			id: 'grafana',
-			name: 'Grafana',
-			description: 'Tableaux de bord de visualisation pour les métriques et la supervision.',
-			url: '#',
-			category: 'Monitoring',
-			online: false
+			id: 'srv-openldap',
+			name: 'SRV-OpenLDAP',
+			description: 'Annuaire OpenLDAP centralise pour les utilisateurs et groupes du projet.',
+			url: '/status',
+			category: 'Annuaire',
+			status: 'Monitore',
+			external: false
 		},
 		{
-			id: 'portainer',
-			name: 'Portainer',
-			description: 'Interface de gestion des conteneurs Docker et Kubernetes.',
-			url: '#',
-			category: 'Infrastructure',
-			online: true
+			id: 'srv-nextcloud',
+			name: 'SRV-Nextcloud',
+			description: 'Cloud prive Nextcloud publie en HTTPS et relie a OpenLDAP.',
+			url: 'https://192.168.10.20',
+			category: 'Cloud',
+			status: 'Disponible',
+			external: true
 		},
 		{
-			id: 'gitlab',
-			name: 'GitLab',
-			description: 'Dépôts Git, gestion de projets et pipelines CI/CD intégrés.',
-			url: '#',
-			category: 'Développement',
-			online: false
+			id: 'srv-intranet',
+			name: 'SRV-Intranet',
+			description: 'Portail intranet, supervision applicative, audit et administration locale.',
+			url: '/dashboard',
+			category: 'Supervision',
+			status: 'Disponible',
+			external: false
 		},
 		{
-			id: 'prometheus',
-			name: 'Prometheus',
-			description: 'Système de collecte et d\'alerting pour les métriques d\'infrastructure.',
-			url: '#',
-			category: 'Monitoring',
-			online: true
+			id: 'checks',
+			name: 'Etat des services',
+			description: 'Vue des checks DNS, LDAP et Nextcloud avec latence et historique recent.',
+			url: '/status',
+			category: 'Supervision',
+			status: 'Disponible',
+			external: false
 		},
 		{
-			id: 'vaultwarden',
-			name: 'Vaultwarden',
-			description: 'Gestionnaire de mots de passe compatible Bitwarden auto-hébergé.',
-			url: '#',
-			category: 'Productivité',
-			online: true
+			id: 'logs',
+			name: 'Journaux',
+			description: 'Journaux d audit intranet et journaux de services collectes par SSH.',
+			url: '/logs',
+			category: 'Supervision',
+			status: 'Disponible',
+			external: false
 		}
 	];
 
@@ -78,11 +86,10 @@
 <div class="p-8">
 	<header class="mb-8">
 		<h1 class="text-2xl font-bold text-white">Services</h1>
-		<p class="mt-1 text-sm text-slate-400">Accédez aux services de l'infrastructure</p>
+		<p class="mt-1 text-sm text-slate-400">Accedez aux composants reels de l'infrastructure</p>
 	</header>
 
-	<!-- Filtres -->
-	<div class="mb-6 flex gap-2 flex-wrap">
+	<div class="mb-6 flex flex-wrap gap-2">
 		{#each categories as cat}
 			<button
 				onclick={() => (activeCategory = cat)}
@@ -96,26 +103,21 @@
 		{/each}
 	</div>
 
-	<!-- Grid -->
 	<div class="grid grid-cols-2 gap-4 xl:grid-cols-3">
 		{#each filtered as service}
 			<div
 				class="flex flex-col rounded-xl border border-slate-800 bg-slate-900 p-5 transition-colors hover:border-slate-700"
 			>
-				<div class="mb-4 flex items-start justify-between">
-					<div>
-						<h3 class="font-semibold text-white">{service.name}</h3>
+				<div class="mb-4 flex items-start justify-between gap-3">
+					<div class="min-w-0">
+						<h3 class="truncate font-semibold text-white">{service.name}</h3>
 						<span class="text-xs text-slate-500">{service.category}</span>
 					</div>
 					<span
-						class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium
-							{service.online
-							? 'bg-green-400/10 text-green-400'
-							: 'bg-red-400/10 text-red-400'}"
+						class="flex flex-shrink-0 items-center gap-1.5 rounded-full bg-green-400/10 px-2.5 py-1 text-xs font-medium text-green-400"
 					>
-						<span class="h-1.5 w-1.5 rounded-full {service.online ? 'bg-green-400' : 'bg-red-400'}"
-						></span>
-						{service.online ? 'En ligne' : 'Hors ligne'}
+						<span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
+						{service.status}
 					</span>
 				</div>
 
@@ -123,9 +125,9 @@
 
 				<a
 					href={service.url}
-					class="flex items-center justify-center gap-2 rounded-lg border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:border-blue-500 hover:text-blue-400
-						{!service.online ? 'pointer-events-none opacity-40' : ''}"
-					aria-disabled={!service.online}
+					target={service.external ? '_blank' : undefined}
+					rel={service.external ? 'noreferrer' : undefined}
+					class="flex items-center justify-center gap-2 rounded-lg border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:border-blue-500 hover:text-blue-400"
 				>
 					<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path
@@ -135,7 +137,7 @@
 							d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
 						/>
 					</svg>
-					Accéder
+					Acceder
 				</a>
 			</div>
 		{/each}
