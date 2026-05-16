@@ -55,24 +55,6 @@
 			category: 'Supervision',
 			status: 'Disponible',
 			external: false
-		},
-		{
-			id: 'checks',
-			name: 'État des services',
-			description: 'Vue des checks DNS, LDAP et Nextcloud avec latence et historique récent.',
-			url: '/status',
-			category: 'Supervision',
-			status: 'Disponible',
-			external: false
-		},
-		{
-			id: 'logs',
-			name: 'Journaux',
-			description: "Journaux d'audit intranet et journaux de services collectés par SSH.",
-			url: '/logs',
-			category: 'Supervision',
-			status: 'Disponible',
-			external: false
 		}
 	];
 
