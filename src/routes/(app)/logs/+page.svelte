@@ -4,16 +4,16 @@
 	let { data }: { data: PageData } = $props();
 
 	const ACTION_LABELS: Record<string, string> = {
-		'auth.login.success': 'Connexion reussie',
-		'auth.login.failure': 'Echec de connexion',
-		'auth.logout': 'Deconnexion',
-		'user.create': 'Compte cree',
-		'user.activate': 'Compte active',
-		'user.deactivate': 'Compte desactive',
-		'user.delete': 'Compte supprime',
-		'user.password_reset': 'MDP reinitialise',
-		'user.profile_update': 'Profil modifie',
-		'user.password_change': 'MDP modifie'
+		'auth.login.success': 'Connexion réussie',
+		'auth.login.failure': 'Échec de connexion',
+		'auth.logout': 'Déconnexion',
+		'user.create': 'Compte créé',
+		'user.activate': 'Compte activé',
+		'user.deactivate': 'Compte désactivé',
+		'user.delete': 'Compte supprimé',
+		'user.password_reset': 'MDP réinitialisé',
+		'user.profile_update': 'Profil modifié',
+		'user.password_change': 'MDP modifié'
 	};
 
 	const ACTION_STYLE: Record<string, string> = {
@@ -56,7 +56,7 @@
 		d ? new Date(d).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '-';
 
 	const formatActor = (log: (typeof data.auditLogs)[number]) =>
-		log.actorUsername ? (log.actorDisplayName ?? log.actorUsername) : 'Systeme';
+		log.actorUsername ? (log.actorDisplayName ?? log.actorUsername) : 'Système';
 
 	const buildUrl = (overrides: Record<string, string | number>) => {
 		const p = new URLSearchParams();
@@ -74,7 +74,7 @@
 <div class="p-8">
 	<header class="mb-8">
 		<h1 class="text-2xl font-bold text-white">Journaux</h1>
-		<p class="mt-1 text-sm text-slate-400">Acces reserve aux administrateurs</p>
+		<p class="mt-1 text-sm text-slate-400">Accès réservé aux administrateurs</p>
 	</header>
 
 	<!-- Onglets -->
@@ -83,7 +83,7 @@
 			href="/logs?tab=audit"
 			class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {data.tab === 'audit' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'}"
 		>
-			Activite intranet
+			Activité intranet
 		</a>
 		<a
 			href="/logs?tab=services"
@@ -133,7 +133,7 @@
 		</button>
 		<a href="/logs?tab={data.tab}"
 			class="rounded-lg px-4 py-2 text-sm text-slate-400 hover:bg-slate-800">
-			Reinitialiser
+			Réinitialiser
 		</a>
 	</form>
 
@@ -149,7 +149,7 @@
 							<th class="w-44 px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Date</th>
 							<th class="px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Action</th>
 							<th class="px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Acteur</th>
-							<th class="px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Cible / Detail</th>
+							<th class="px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Cible / Détail</th>
 							<th class="px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">IP</th>
 						</tr>
 					</thead>
@@ -180,7 +180,7 @@
 					<span class="text-xs text-slate-500">Page {data.page}</span>
 					<div class="flex gap-2">
 						{#if data.page > 1}
-							<a href={buildUrl({ page: data.page - 1 })} class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">Precedent</a>
+							<a href={buildUrl({ page: data.page - 1 })} class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">Précédent</a>
 						{/if}
 						{#if data.hasMore}
 							<a href={buildUrl({ page: data.page + 1 })} class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">Suivant</a>
@@ -229,7 +229,7 @@
 					<span class="text-xs text-slate-500">Page {data.page}</span>
 					<div class="flex gap-2">
 						{#if data.page > 1}
-							<a href={buildUrl({ page: data.page - 1 })} class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">Precedent</a>
+							<a href={buildUrl({ page: data.page - 1 })} class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">Précédent</a>
 						{/if}
 						{#if data.hasMore}
 							<a href={buildUrl({ page: data.page + 1 })} class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">Suivant</a>

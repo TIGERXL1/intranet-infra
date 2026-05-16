@@ -11,7 +11,7 @@
 
 	const statusConfig: Record<Status, { label: string; dot: string; badge: string }> = {
 		online: { label: 'En ligne', dot: 'bg-green-400', badge: 'bg-green-400/10 text-green-400' },
-		degraded: { label: 'Degrade', dot: 'bg-yellow-400', badge: 'bg-yellow-400/10 text-yellow-400' },
+		degraded: { label: 'Dégradé', dot: 'bg-yellow-400', badge: 'bg-yellow-400/10 text-yellow-400' },
 		offline: { label: 'Hors ligne', dot: 'bg-red-400', badge: 'bg-red-400/10 text-red-400' }
 	};
 
@@ -33,8 +33,8 @@
 <div class="p-8">
 	<header class="mb-8 flex items-center justify-between">
 		<div>
-			<h1 class="text-2xl font-bold text-white">Etat des services</h1>
-			<p class="mt-1 text-sm text-slate-400">Verification metier toutes les 60 secondes</p>
+			<h1 class="text-2xl font-bold text-white">État des services</h1>
+			<p class="mt-1 text-sm text-slate-400">Vérification métier toutes les 60 secondes</p>
 		</div>
 		<form
 			method="post"
@@ -61,7 +61,7 @@
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
 						d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 				</svg>
-				{refreshing ? 'Verification...' : 'Verifier maintenant'}
+				{refreshing ? 'Vérification...' : 'Vérifier maintenant'}
 			</button>
 		</form>
 	</header>
@@ -82,7 +82,7 @@
 			</div>
 			<div>
 				<p class="text-2xl font-bold text-white">{degradedCount}</p>
-				<p class="text-sm text-slate-400">Degrades</p>
+				<p class="text-sm text-slate-400">Dégradés</p>
 			</div>
 		</div>
 		<div class="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-900 p-5">
@@ -98,7 +98,7 @@
 
 	{#if data.services.length === 0}
 		<div class="rounded-xl border border-slate-800 bg-slate-900 py-16 text-center text-slate-500">
-			Aucun service configure. Lancez <code class="text-slate-400">npm run db:seed-services</code>.
+			Aucun service configuré. Lancez <code class="text-slate-400">npm run db:seed-services</code>.
 		</div>
 	{:else}
 		<div class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
@@ -110,7 +110,7 @@
 						<th class="px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Latence</th>
 						<th class="px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Moy. 24h</th>
 						<th class="px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Dispo 24h</th>
-						<th class="px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Derniere verif.</th>
+						<th class="px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Dernière vérif.</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-slate-800">

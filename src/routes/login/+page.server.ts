@@ -18,7 +18,7 @@ export const actions: Actions = {
 		const ip = getClientAddress();
 
 		if (!checkRateLimit(ip)) {
-			return fail(429, { error: 'Trop de tentatives. Reessayez dans 15 minutes.' });
+			return fail(429, { error: 'Trop de tentatives. Réessayez dans 15 minutes.' });
 		}
 
 		if (!username || !password) {

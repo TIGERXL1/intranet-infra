@@ -55,14 +55,14 @@ export async function checkNextcloud(baseUrl: string): Promise<CheckResult> {
 		try {
 			json = JSON.parse(body) as Record<string, unknown>;
 		} catch {
-			return { status: 'offline', latencyMs, errorMsg: 'Reponse non JSON' };
+			return { status: 'offline', latencyMs, errorMsg: 'Réponse non JSON' };
 		}
 
 		if (json.maintenance === true) {
 			return { status: 'degraded', latencyMs, errorMsg: 'Nextcloud en mode maintenance' };
 		}
 		if (json.installed !== true) {
-			return { status: 'offline', latencyMs, errorMsg: 'Nextcloud non installe' };
+			return { status: 'offline', latencyMs, errorMsg: 'Nextcloud non installé' };
 		}
 
 		const status = latencyMs > DEGRADED_THRESHOLD_MS ? 'degraded' : 'online';

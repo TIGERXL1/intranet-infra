@@ -33,10 +33,10 @@ export const actions: Actions = {
 		const email = (data.get('email') as string | null)?.trim() ?? '';
 
 		if (!displayName) {
-			return fail(400, { profileError: 'Le nom affiche ne peut pas etre vide.' });
+			return fail(400, { profileError: 'Le nom affiché ne peut pas être vide.' });
 		}
 		if (displayName.length > DISPLAY_NAME_MAX) {
-			return fail(400, { profileError: `Le nom affiche ne peut pas depasser ${DISPLAY_NAME_MAX} caracteres.` });
+			return fail(400, { profileError: `Le nom affiché ne peut pas dépasser ${DISPLAY_NAME_MAX} caractères.` });
 		}
 		if (email && !EMAIL_REGEX.test(email)) {
 			return fail(400, { profileError: 'Adresse e-mail invalide.' });

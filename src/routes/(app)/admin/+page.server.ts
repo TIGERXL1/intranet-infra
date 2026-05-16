@@ -27,7 +27,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 export const actions: Actions = {
 	create: async ({ request, locals, getClientAddress }) => {
-		if (locals.user?.role !== 'admin') return fail(403, { createError: 'Acces refuse.' });
+		if (locals.user?.role !== 'admin') return fail(403, { createError: 'Accès refusé.' });
 
 		const data = await request.formData();
 		const username = (data.get('username') as string | null)?.trim() ?? '';
@@ -36,7 +36,7 @@ export const actions: Actions = {
 		const role = (data.get('role') as string | null) ?? 'user';
 
 		if (!username || username.length < 3) {
-			return fail(400, { createError: "L'identifiant doit contenir au moins 3 caracteres." });
+			return fail(400, { createError: "L'identifiant doit contenir au moins 3 caractères." });
 		}
 		if (!/^[a-z0-9_-]+$/.test(username)) {
 			return fail(400, { createError: "L'identifiant ne peut contenir que des lettres minuscules, chiffres, - et _." });
@@ -49,7 +49,7 @@ export const actions: Actions = {
 			return fail(400, { createError: 'Les mots de passe ne correspondent pas.' });
 		}
 		if (role !== 'admin' && role !== 'user') {
-			return fail(400, { createError: 'Role invalide.' });
+			return fail(400, { createError: 'Rôle invalide.' });
 		}
 
 		const [existing] = await db
@@ -59,7 +59,7 @@ export const actions: Actions = {
 			.limit(1);
 
 		if (existing) {
-			return fail(409, { createError: 'Cet identifiant est deja utilise.' });
+			return fail(409, { createError: 'Cet identifiant est déjà utilisé.' });
 		}
 
 		const newUserId = await createUser({
@@ -87,7 +87,7 @@ export const actions: Actions = {
 		const userId = data.get('userId') as string;
 
 		if (userId === locals.user.id) {
-			return fail(400, { toggleError: 'Vous ne pouvez pas desactiver votre propre compte.' });
+			return fail(400, { toggleError: 'Vous ne pouvez pas désactiver votre propre compte.' });
 		}
 
 		const [user] = await db
@@ -105,7 +105,7 @@ export const actions: Actions = {
 				.where(eq(users.role, 'admin'));
 
 			if (value <= 1) {
-				return fail(400, { toggleError: 'Impossible de desactiver le dernier compte administrateur.' });
+				return fail(400, { toggleError: 'Impossible de désactiver le dernier compte administrateur.' });
 			}
 		}
 
