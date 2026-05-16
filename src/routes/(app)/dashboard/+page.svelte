@@ -6,7 +6,7 @@
 	const quickLinks = [
 		{
 			name: 'Nextcloud',
-			description: 'Cloud prive',
+			description: 'Cloud privé',
 			url: 'https://192.168.10.20',
 			external: true
 		},
@@ -23,7 +23,7 @@
 			external: true
 		},
 		{
-			name: 'Etat des services',
+			name: 'État des services',
 			description: 'Checks DNS, LDAP, cloud',
 			url: '/status',
 			external: false
@@ -48,7 +48,7 @@
 
 	const statusConfig: Record<string, { label: string; dot: string; badge: string }> = {
 		online: { label: 'En ligne', dot: 'bg-green-400', badge: 'bg-green-400/10 text-green-400' },
-		degraded: { label: 'Degrade', dot: 'bg-yellow-400', badge: 'bg-yellow-400/10 text-yellow-400' },
+		degraded: { label: 'Dégradé', dot: 'bg-yellow-400', badge: 'bg-yellow-400/10 text-yellow-400' },
 		offline: { label: 'Hors ligne', dot: 'bg-red-400', badge: 'bg-red-400/10 text-red-400' }
 	};
 
@@ -81,7 +81,7 @@
 			<p class="mt-1 text-3xl font-bold text-green-400">{onlineCount}</p>
 		</div>
 		<div class="rounded-xl border border-slate-800 bg-slate-900 p-5">
-			<p class="text-sm text-slate-400">Degrades</p>
+			<p class="text-sm text-slate-400">Dégradés</p>
 			<p class="mt-1 text-3xl font-bold text-yellow-400">{degradedCount}</p>
 		</div>
 		<div class="rounded-xl border border-slate-800 bg-slate-900 p-5">
@@ -93,7 +93,7 @@
 	<div class="grid gap-6 xl:grid-cols-[1fr_420px]">
 		<section>
 			<h2 class="mb-4 text-sm font-semibold tracking-wide text-slate-400 uppercase">
-				Acces rapide
+				Accès rapide
 			</h2>
 			<div class="grid grid-cols-2 gap-3">
 				{#each quickLinks as link}
@@ -116,7 +116,7 @@
 		<section>
 			<div class="mb-4 flex items-center justify-between">
 				<h2 class="text-sm font-semibold tracking-wide text-slate-400 uppercase">
-					Etat monitoré
+					État monitoré
 				</h2>
 				<a href="/status" class="text-xs text-blue-400 hover:text-blue-300">Voir tout</a>
 			</div>
@@ -148,13 +148,13 @@
 	<section class="mt-8">
 		<div class="mb-4 flex items-center justify-between">
 			<h2 class="text-sm font-semibold tracking-wide text-slate-400 uppercase">
-				Activite recente
+				Activité récente
 			</h2>
 			<a href="/logs" class="text-xs text-blue-400 hover:text-blue-300">Voir les journaux</a>
 		</div>
 		<div class="rounded-xl border border-slate-800 bg-slate-900">
 			{#if data.recentAudits.length === 0}
-				<p class="px-4 py-5 text-sm text-slate-500">Aucun evenement d'audit enregistre.</p>
+				<p class="px-4 py-5 text-sm text-slate-500">Aucun événement d'audit enregistré.</p>
 			{:else}
 				<div class="divide-y divide-slate-800">
 					{#each data.recentAudits as log}

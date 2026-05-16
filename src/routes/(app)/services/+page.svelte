@@ -1,11 +1,11 @@
 <script lang="ts">
-	const categories = ['Tous', 'Infrastructure', 'Reseau', 'Annuaire', 'Cloud', 'Supervision'];
+	const categories = ['Tous', 'Infrastructure', 'Réseau', 'Annuaire', 'Cloud', 'Supervision'];
 
 	const services = [
 		{
 			id: 'proxmox',
 			name: 'Proxmox VE',
-			description: 'Hyperviseur de la maquette, hote des VMs et conteneurs du projet.',
+			description: 'Hyperviseur de la maquette, hôte des VMs et conteneurs du projet.',
 			url: 'https://192.168.1.33:8006',
 			category: 'Infrastructure',
 			status: 'Disponible',
@@ -14,34 +14,34 @@
 		{
 			id: 'opnsense',
 			name: 'OPNsense',
-			description: 'Routeur, pare-feu et passerelle NAT entre le reseau amont et le LAN projet.',
+			description: 'Routeur, pare-feu et passerelle NAT entre le réseau amont et le LAN projet.',
 			url: 'https://192.168.10.1',
-			category: 'Reseau',
+			category: 'Réseau',
 			status: 'Disponible',
 			external: true
 		},
 		{
 			id: 'srv-dns',
 			name: 'SRV-DNS',
-			description: 'Serveur Bind9 pour la zone interne entreprise.local et les resolutions inverses.',
+			description: 'Serveur Bind9 pour la zone interne entreprise.local et les résolutions inverses.',
 			url: '/status',
-			category: 'Reseau',
-			status: 'Monitore',
+			category: 'Réseau',
+			status: 'Monitoré',
 			external: false
 		},
 		{
 			id: 'srv-openldap',
 			name: 'SRV-OpenLDAP',
-			description: 'Annuaire OpenLDAP centralise pour les utilisateurs et groupes du projet.',
+			description: 'Annuaire OpenLDAP centralisé pour les utilisateurs et groupes du projet.',
 			url: '/status',
 			category: 'Annuaire',
-			status: 'Monitore',
+			status: 'Monitoré',
 			external: false
 		},
 		{
 			id: 'srv-nextcloud',
 			name: 'SRV-Nextcloud',
-			description: 'Cloud prive Nextcloud publie en HTTPS et relie a OpenLDAP.',
+			description: 'Cloud privé Nextcloud publié en HTTPS et relié à OpenLDAP.',
 			url: 'https://192.168.10.20',
 			category: 'Cloud',
 			status: 'Disponible',
@@ -58,8 +58,8 @@
 		},
 		{
 			id: 'checks',
-			name: 'Etat des services',
-			description: 'Vue des checks DNS, LDAP et Nextcloud avec latence et historique recent.',
+			name: 'État des services',
+			description: 'Vue des checks DNS, LDAP et Nextcloud avec latence et historique récent.',
 			url: '/status',
 			category: 'Supervision',
 			status: 'Disponible',
@@ -68,7 +68,7 @@
 		{
 			id: 'logs',
 			name: 'Journaux',
-			description: 'Journaux d audit intranet et journaux de services collectes par SSH.',
+			description: "Journaux d'audit intranet et journaux de services collectés par SSH.",
 			url: '/logs',
 			category: 'Supervision',
 			status: 'Disponible',
@@ -86,7 +86,7 @@
 <div class="p-8">
 	<header class="mb-8">
 		<h1 class="text-2xl font-bold text-white">Services</h1>
-		<p class="mt-1 text-sm text-slate-400">Accedez aux composants reels de l'infrastructure</p>
+		<p class="mt-1 text-sm text-slate-400">Accédez aux composants réels de l'infrastructure</p>
 	</header>
 
 	<div class="mb-6 flex flex-wrap gap-2">
@@ -137,7 +137,7 @@
 							d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
 						/>
 					</svg>
-					Acceder
+					Accéder
 				</a>
 			</div>
 		{/each}
