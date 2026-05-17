@@ -8,6 +8,7 @@ import { eq, lt } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { parseSyslogLine } from './log-parsers/syslog';
 import { parseNginxErrorLine, parseNginxAccessLine } from './log-parsers/nginx';
+import { parseJournalLine } from './log-parsers/journal';
 
 const SSH_USER = env.SSH_LOG_USER ?? 'intranet-monitor';
 const SSH_KEY_PATH = env.SSH_KEY_PATH ?? '/home/trading/.ssh/intranet_monitor_ed25519';
@@ -65,29 +66,54 @@ function sshExec(host: string, command: string): Promise<string> {
 	});
 }
 
+function envNameForService(service: { id: string; checkType: string }): string {
+	return `${service.id}_${service.checkType}`.toUpperCase().replace(/[^A-Z0-9]+/g, '_');
+}
+
+function hostFromServiceTarget(target: string): string {
+	try {
+		return new URL(target).hostname;
+	} catch {
+		return target;
+	}
+}
+
+function resolveLogHost(service: { id: string; host: string; checkType: string }): string {
+	const serviceEnv = env[`LOG_HOST_${envNameForService(service)}`];
+	const typeEnv = env[`${service.checkType.toUpperCase()}_LOG_HOST`];
+	return serviceEnv ?? typeEnv ?? hostFromServiceTarget(service.host);
+}
+
 async function collectForService(service: { id: string; host: string; checkType: string }): Promise<void> {
 	let rawLines: string[] = [];
+	const logHost = resolveLogHost(service);
 
 	try {
 		if (service.checkType === 'dns') {
-			const out = await sshExec(service.host, `tail -n ${LOG_LINES} /var/log/syslog | grep -i named`);
+			const out = await sshExec(logHost, `tail -n ${LOG_LINES} /var/log/syslog | grep -Ei 'named|bind9'`);
 			rawLines = out.split('\n').filter(Boolean);
 		} else if (service.checkType === 'ldap') {
-			const out = await sshExec(service.host, `tail -n ${LOG_LINES} /var/log/syslog | grep -i slapd`);
+			const out = await sshExec(logHost, `tail -n ${LOG_LINES} /var/log/syslog | grep -i slapd`);
 			rawLines = out.split('\n').filter(Boolean);
 		} else if (service.checkType === 'nextcloud') {
 			const [errorOut, accessOut] = await Promise.all([
-				sshExec(service.host, `tail -n ${LOG_LINES} /var/log/nginx/error.log`),
-				sshExec(service.host, `tail -n ${LOG_LINES} /var/log/nginx/access.log`)
+				sshExec(logHost, `tail -n ${LOG_LINES} /var/log/nginx/error.log`),
+				sshExec(logHost, `tail -n ${LOG_LINES} /var/log/nginx/access.log`)
 			]);
 			rawLines = [
 				...errorOut.split('\n').filter(Boolean).map((l) => `ERROR_LOG:${l}`),
 				...accessOut.split('\n').filter(Boolean).map((l) => `ACCESS_LOG:${l}`)
 			];
+		} else if (service.checkType === 'proxmox') {
+			const out = await sshExec(
+				logHost,
+				`sudo -n /usr/bin/journalctl -n ${LOG_LINES} --no-pager -o short-iso -u pvedaemon -u pveproxy -u pvestatd -u pve-cluster -u corosync 2>/dev/null`
+			);
+			rawLines = out.split('\n').filter(Boolean);
 		}
 	} catch (err) {
 		// SSH connection failed - not fatal, will retry at next collection cycle
-		console.error(`[ssh-collector] ${service.checkType} (${service.host}):`, err instanceof Error ? err.message : err);
+		console.error(`[ssh-collector] ${service.checkType} (${logHost}):`, err instanceof Error ? err.message : err);
 		return;
 	}
 
@@ -103,7 +129,7 @@ async function collectForService(service: { id: string; host: string; checkType:
 				line = parseNginxAccessLine(raw.slice('ACCESS_LOG:'.length));
 			}
 		} else {
-			line = parseSyslogLine(raw);
+			line = service.checkType === 'proxmox' ? parseJournalLine(raw) : parseSyslogLine(raw);
 		}
 
 		if (!line) continue;

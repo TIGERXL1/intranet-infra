@@ -1,5 +1,6 @@
 import { parseSyslogLine } from '../src/lib/server/log-parsers/syslog';
 import { parseNginxErrorLine, parseNginxAccessLine } from '../src/lib/server/log-parsers/nginx';
+import { parseJournalLine } from '../src/lib/server/log-parsers/journal';
 
 let passed = 0;
 let failed = 0;
@@ -155,6 +156,32 @@ section('parseNginxAccessLine - filtrage HTTP');
 
 {
 	const result = parseNginxAccessLine('ligne invalide');
+	assert('ligne invalide retourne null', result === null);
+}
+
+// -----------------------------------------------------------------------
+// JOURNALD PARSER
+// -----------------------------------------------------------------------
+section('parseJournalLine - Proxmox');
+
+{
+	const line = '2026-05-17T12:10:00+00:00 pve pvedaemon[1234]: successful auth for user root@pam';
+	const result = parseJournalLine(line);
+	assert('parse reussit', result !== null);
+	assert('niveau INFO', result?.level === 'INFO');
+	assert('message extrait', result?.message.includes('root@pam'));
+	assert('date parsee', result?.loggedAt instanceof Date);
+}
+
+{
+	const line = '2026-05-17T12:11:00+00:00 pve pveproxy[1234]: authentication failure; rhost=192.168.10.50 user=root@pam';
+	const result = parseJournalLine(line);
+	assert('parse reussit', result !== null);
+	assert('niveau ERROR detecte', result?.level === 'ERROR');
+}
+
+{
+	const result = parseJournalLine('ligne invalide');
 	assert('ligne invalide retourne null', result === null);
 }
 

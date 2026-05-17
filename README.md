@@ -1,42 +1,78 @@
-# sv
+# Intranet infrastructure
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Application SvelteKit de supervision de l'intranet.
 
-## Creating a project
+## Journalisation
 
-If you're seeing this, you've probably already done this step. Congrats!
+Le service de journalisation est integre a l'application. Le serveur intranet se connecte en SSH aux machines declarees dans `services`, lit les journaux locaux, les normalise puis les stocke dans `service_logs`. La page `/logs?tab=services` affiche les entrees aux administrateurs.
 
-```sh
-# create a new project
-npx sv create my-app
-```
+Sources collectees :
 
-To recreate this project with the same configuration:
+- DNS : `/var/log/syslog`, lignes `named` ou `bind9`.
+- LDAP : `/var/log/syslog`, lignes `slapd`.
+- Nextcloud : `/var/log/nginx/error.log` et erreurs HTTP `>= 400` de `/var/log/nginx/access.log`.
+- Proxmox : `journalctl` sur `pvedaemon`, `pveproxy`, `pvestatd`, `pve-cluster` et `corosync`.
 
-```sh
-# recreate this project
-npx sv@0.15.1 create --template minimal --types ts --add prettier eslint tailwindcss="plugins:none" sveltekit-adapter="adapter:node" --install npm .
-```
+Variables utiles :
 
-## Developing
+- `SSH_LOG_USER` : utilisateur SSH de lecture des logs, par defaut `intranet-monitor`.
+- `SSH_KEY_PATH` : cle privee utilisee par le serveur intranet.
+- `SSH_LOG_LINES` : nombre de lignes lues par cycle.
+- `LOG_COLLECT_INTERVAL_SECONDS` : frequence de collecte.
+- `NEXTCLOUD_LOG_HOST` et `PROXMOX_LOG_HOST` : hote SSH si la cible de supervision est une URL.
+- `LOG_HOST_<SERVICE_ID>_<CHECK_TYPE>` : surcharge par service, par exemple `LOG_HOST_SRV_NEXTCLOUD_NEXTCLOUD`.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
+Initialisation des services :
 
 ```sh
-npm run build
+npm run db:seed-services
 ```
 
-You can preview the production build with `npm run preview`.
+## Installation de l'acces logs
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Sur chaque machine a collecter, creer l'utilisateur et installer la cle publique du serveur intranet :
+
+```sh
+sudo useradd --system --create-home --shell /usr/sbin/nologin intranet-monitor
+sudo install -d -o intranet-monitor -g intranet-monitor -m 700 /home/intranet-monitor/.ssh
+echo '<CLE_PUBLIQUE_INTRANET>' | sudo tee /home/intranet-monitor/.ssh/authorized_keys >/dev/null
+sudo chown intranet-monitor:intranet-monitor /home/intranet-monitor/.ssh/authorized_keys
+sudo chmod 600 /home/intranet-monitor/.ssh/authorized_keys
+```
+
+Pour DNS et LDAP :
+
+```sh
+sudo usermod -aG adm intranet-monitor
+sudo systemctl restart ssh
+```
+
+Pour Nextcloud avec Nginx :
+
+```sh
+sudo usermod -aG adm intranet-monitor
+sudo setfacl -m u:intranet-monitor:r /var/log/nginx/access.log /var/log/nginx/error.log
+sudo setfacl -d -m u:intranet-monitor:r /var/log/nginx
+sudo systemctl restart ssh
+```
+
+Sur l'hote Proxmox :
+
+```sh
+sudo usermod -aG adm intranet-monitor
+sudo install -d -m 755 -o root -g root /etc/sudoers.d
+printf 'intranet-monitor ALL=(root) NOPASSWD: /usr/bin/journalctl\n' | sudo tee /etc/sudoers.d/intranet-monitor-journalctl >/dev/null
+sudo chmod 440 /etc/sudoers.d/intranet-monitor-journalctl
+sudo systemctl restart ssh
+```
+
+Sur le serveur intranet, generer la cle si elle n'existe pas puis configurer `.env` :
+
+```sh
+sudo install -d -m 700 /opt/intranet-infra/keys
+sudo ssh-keygen -t ed25519 -f /opt/intranet-infra/keys/intranet_monitor_ed25519 -N '' -C intranet-monitor
+sudo chmod 600 /opt/intranet-infra/keys/intranet_monitor_ed25519
+sudo cat /opt/intranet-infra/keys/intranet_monitor_ed25519.pub
+```
+
+Copier la cle publique affichee a la place de `<CLE_PUBLIQUE_INTRANET>` sur les machines collectees.

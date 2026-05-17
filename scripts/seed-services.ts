@@ -20,6 +20,12 @@ const entries = [
 		name: 'SRV-Nextcloud',
 		host: process.env.NEXTCLOUD_URL ?? 'https://100.90.144.11',
 		checkType: 'nextcloud'
+	},
+	{
+		id: 'host-proxmox',
+		name: 'Host Proxmox',
+		host: process.env.PROXMOX_URL ?? process.env.PROXMOX_HOST ?? 'https://192.168.10.2:8006',
+		checkType: 'proxmox'
 	}
 ] as const;
 
