@@ -33,7 +33,7 @@ npm run db:seed-services
 Sur chaque machine a collecter, creer l'utilisateur et installer la cle publique du serveur intranet :
 
 ```sh
-sudo useradd --system --create-home --shell /usr/sbin/nologin intranet-monitor
+sudo useradd --system --create-home --shell /bin/sh intranet-monitor
 sudo install -d -o intranet-monitor -g intranet-monitor -m 700 /home/intranet-monitor/.ssh
 echo '<CLE_PUBLIQUE_INTRANET>' | sudo tee /home/intranet-monitor/.ssh/authorized_keys >/dev/null
 sudo chown intranet-monitor:intranet-monitor /home/intranet-monitor/.ssh/authorized_keys
