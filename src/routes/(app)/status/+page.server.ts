@@ -1,7 +1,7 @@
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
 import { services, serviceChecks } from '$lib/server/db/schema';
-import { eq, desc, gte, and } from 'drizzle-orm';
+import { eq, desc, gte, and, ne } from 'drizzle-orm';
 import { runChecksNow } from '$lib/server/scheduler';
 
 const UPTIME_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -10,7 +10,7 @@ export const load: PageServerLoad = async () => {
 	const activeServices = await db
 		.select()
 		.from(services)
-		.where(eq(services.isActive, true));
+		.where(and(eq(services.isActive, true), ne(services.checkType, 'proxmox')));
 
 	const since = new Date(Date.now() - UPTIME_WINDOW_MS);
 

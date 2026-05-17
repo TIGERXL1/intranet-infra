@@ -5,7 +5,6 @@ import { services, serviceChecks } from './db/schema';
 import { checkDns } from './checkers/dns';
 import { checkLdap } from './checkers/ldap';
 import { checkNextcloud } from './checkers/nextcloud';
-import { checkProxmox } from './checkers/proxmox';
 import { collectServiceLogs } from './ssh-collector';
 import { env } from '$env/dynamic/private';
 
@@ -33,8 +32,6 @@ async function runChecks(): Promise<void> {
 				result = await checkLdap(service.host);
 			} else if (service.checkType === 'nextcloud') {
 				result = await checkNextcloud(service.host);
-			} else if (service.checkType === 'proxmox') {
-				result = await checkProxmox(service.host);
 			} else {
 				continue;
 			}

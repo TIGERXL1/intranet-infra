@@ -153,14 +153,32 @@
 			<a href="/logs" class="text-xs text-blue-400 hover:text-blue-300">Voir les journaux</a>
 		</div>
 		<div class="rounded-xl border border-slate-800 bg-slate-900">
-			{#if data.recentAudits.length === 0}
-				<p class="px-4 py-5 text-sm text-slate-500">Aucun événement d'audit enregistré.</p>
+			{#if data.recentActivity.length === 0}
+				<p class="px-4 py-5 text-sm text-slate-500">Aucune activité récente enregistrée.</p>
 			{:else}
 				<div class="divide-y divide-slate-800">
-					{#each data.recentAudits as log}
-						<div class="flex items-center justify-between gap-4 px-4 py-3">
-							<p class="text-sm text-slate-200">{log.action}</p>
-							<p class="text-xs text-slate-500">{formatDate(log.createdAt)}</p>
+					{#each data.recentActivity as log}
+						<div class="flex items-start justify-between gap-4 px-4 py-3">
+							<div class="min-w-0">
+								<div class="flex items-center gap-2">
+									<span
+										class="rounded px-2 py-0.5 text-xs font-medium {log.type === 'audit'
+											? 'bg-blue-400/10 text-blue-400'
+											: log.level === 'ERROR'
+												? 'bg-red-400/10 text-red-400'
+												: log.level === 'WARN'
+													? 'bg-yellow-400/10 text-yellow-400'
+													: 'bg-slate-400/10 text-slate-400'}"
+									>
+										{log.type === 'audit' ? 'Intranet' : log.level}
+									</span>
+									<p class="truncate text-sm text-slate-200">{log.label}</p>
+								</div>
+								{#if log.detail}
+									<p class="mt-1 truncate text-xs text-slate-500">{log.detail}</p>
+								{/if}
+							</div>
+							<p class="shrink-0 text-xs text-slate-500">{formatDate(log.createdAt)}</p>
 						</div>
 					{/each}
 				</div>
