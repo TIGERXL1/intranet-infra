@@ -24,7 +24,7 @@ const entries = [
 	{
 		id: 'host-proxmox',
 		name: 'Host Proxmox',
-		host: process.env.PROXMOX_URL ?? process.env.PROXMOX_HOST ?? 'https://192.168.10.2:8006',
+		host: process.env.PROXMOX_URL ?? process.env.PROXMOX_HOST ?? 'https://192.168.1.33:8006',
 		checkType: 'proxmox'
 	}
 ] as const;
