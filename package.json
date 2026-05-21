@@ -11,7 +11,11 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "drizzle-kit migrate",
+		"db:create-admin": "tsx --env-file .env scripts/create-admin.ts",
+		"db:seed-services": "tsx --env-file .env scripts/seed-services.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.4",
@@ -21,6 +25,8 @@
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
 		"@tailwindcss/vite": "^4.2.2",
 		"@types/node": "^24",
+		"@types/pg": "^8.20.0",
+		"@types/ssh2": "^1.15.5",
 		"drizzle-kit": "^0.31.10",
 		"eslint": "^10.2.0",
 		"eslint-config-prettier": "^10.1.8",
@@ -37,8 +43,11 @@
 		"vite": "^8.0.7"
 	},
 	"dependencies": {
+		"@node-rs/argon2": "^2.0.2",
 		"drizzle-orm": "^0.45.2",
-		"pg": "^8.20.0"
+		"ldapts": "^8.1.7",
+		"pg": "^8.20.0",
+		"ssh2": "^1.17.0"
 	},
 	"overrides": {
 		"cookie": ">=0.7.0",
