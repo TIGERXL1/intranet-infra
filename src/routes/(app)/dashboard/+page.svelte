@@ -141,10 +141,10 @@
 					<button
 						type="button"
 						onclick={() => openLink(link)}
-						class="panel panel-hover flex min-h-24 items-center gap-4 p-4"
+						class="panel panel-hover grid min-h-24 grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-4 p-4 text-left"
 					>
 						<div
-							class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-sky-500/10 text-sky-300"
+							class="flex h-10 w-10 items-center justify-center rounded-md bg-sky-500/10 text-sky-300"
 						>
 							<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 								<path
@@ -155,7 +155,7 @@
 								/>
 							</svg>
 						</div>
-						<div class="min-w-0">
+						<div class="min-w-0 self-center">
 							<p class="truncate text-sm font-medium text-white">{link.name}</p>
 							<p class="truncate text-xs text-slate-500">{link.description}</p>
 						</div>

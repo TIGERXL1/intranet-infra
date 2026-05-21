@@ -21,8 +21,7 @@
 					/>
 				</svg>
 			</div>
-			<h1 class="text-2xl font-semibold tracking-tight text-white">Intranet infrastructure</h1>
-			<p class="mt-1 text-sm text-slate-400">Connectez-vous à la supervision du projet</p>
+			<h1 class="text-2xl font-semibold tracking-tight text-white">Intranet</h1>
 		</div>
 
 		<form
