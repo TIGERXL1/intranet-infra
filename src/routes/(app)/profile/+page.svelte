@@ -25,40 +25,41 @@
 			: '—';
 </script>
 
-<div class="p-8">
-	<header class="mb-8">
-		<h1 class="text-2xl font-bold text-white">Mon profil</h1>
+<div class="page-shell">
+	<header class="page-header">
+		<div>
+			<h1 class="page-title">Mon profil</h1>
+			<p class="page-subtitle">Informations du compte connecté</p>
+		</div>
 	</header>
 
-	<div class="mx-auto max-w-lg space-y-4">
-		<div class="flex items-center gap-5 rounded-xl border border-slate-800 bg-slate-900 p-6">
-			<div
-				class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white"
-			>
-				{initials}
-			</div>
-			<div>
-				<p class="text-lg font-semibold text-white">{displayName}</p>
-				<p class="text-sm text-slate-400">@{data.profile?.username}</p>
-				<span
-					class="mt-1 inline-flex items-center gap-1.5 rounded-full bg-green-400/10 px-2.5 py-0.5 text-xs font-medium text-green-400"
+	<div class="mx-auto grid max-w-4xl gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+		<div class="panel p-6">
+			<div class="flex flex-col items-center text-center">
+				<div
+					class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-sky-600 text-2xl font-semibold text-white"
 				>
-					<span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
+					{initials}
+				</div>
+				<p class="mt-4 text-lg font-semibold text-white">{displayName}</p>
+				<p class="text-sm text-slate-400">@{data.profile?.username}</p>
+				<span class="status-pill mt-3 bg-emerald-400/10 text-emerald-300">
+					<span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
 					{data.profile?.role === 'admin' ? 'Administrateur' : 'Utilisateur'}
 				</span>
 			</div>
 		</div>
 
-		<div class="rounded-xl border border-slate-800 bg-slate-900 divide-y divide-slate-800">
-			<div class="flex items-center justify-between px-6 py-4">
+		<div class="panel divide-y divide-slate-800">
+			<div class="grid gap-1 px-5 py-4 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
 				<span class="text-sm text-slate-400">E-mail</span>
-				<span class="text-sm text-slate-200">{data.profile?.email ?? '—'}</span>
+				<span class="text-sm break-words text-slate-200">{data.profile?.email ?? '—'}</span>
 			</div>
-			<div class="flex items-center justify-between px-6 py-4">
+			<div class="grid gap-1 px-5 py-4 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
 				<span class="text-sm text-slate-400">Dernière connexion</span>
 				<span class="text-sm text-slate-200">{formatDate(data.profile?.lastLoginAt ?? null)}</span>
 			</div>
-			<div class="flex items-center justify-between px-6 py-4">
+			<div class="grid gap-1 px-5 py-4 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
 				<span class="text-sm text-slate-400">Membre depuis</span>
 				<span class="text-sm text-slate-200">{formatDate(data.profile?.createdAt ?? null)}</span>
 			</div>

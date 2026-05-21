@@ -49,7 +49,8 @@ export async function verifyLogin(
 
 	if (!valid) {
 		const newCount = user.failedAttempts + 1;
-		const lockUntil = newCount >= LOCKOUT_THRESHOLD ? new Date(Date.now() + LOCKOUT_DURATION_MS) : null;
+		const lockUntil =
+			newCount >= LOCKOUT_THRESHOLD ? new Date(Date.now() + LOCKOUT_DURATION_MS) : null;
 		await db
 			.update(users)
 			.set({ failedAttempts: newCount, ...(lockUntil ? { lockedUntil: lockUntil } : {}) })

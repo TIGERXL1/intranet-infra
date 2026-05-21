@@ -23,7 +23,12 @@ export const actions: Actions = {
 
 		if (!username || !password) {
 			recordFailedAttempt(ip);
-			await writeAuditLog({ actorId: null, action: 'auth.login.failure', metadata: { reason: 'missing_credentials' }, ipAddress: ip });
+			await writeAuditLog({
+				actorId: null,
+				action: 'auth.login.failure',
+				metadata: { reason: 'missing_credentials' },
+				ipAddress: ip
+			});
 			return fail(400, { error: 'Identifiants incorrects.' });
 		}
 
@@ -31,11 +36,20 @@ export const actions: Actions = {
 
 		if (!result) {
 			recordFailedAttempt(ip);
-			await writeAuditLog({ actorId: null, action: 'auth.login.failure', metadata: { username }, ipAddress: ip });
+			await writeAuditLog({
+				actorId: null,
+				action: 'auth.login.failure',
+				metadata: { username },
+				ipAddress: ip
+			});
 			return fail(401, { error: 'Identifiants incorrects.' });
 		}
 
-		const sessionId = await createSession(result.userId, ip, request.headers.get('user-agent') ?? undefined);
+		const sessionId = await createSession(
+			result.userId,
+			ip,
+			request.headers.get('user-agent') ?? undefined
+		);
 
 		cookies.set(SESSION_COOKIE, sessionId, {
 			httpOnly: true,

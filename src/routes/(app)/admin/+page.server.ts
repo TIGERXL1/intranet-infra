@@ -39,7 +39,9 @@ export const actions: Actions = {
 			return fail(400, { createError: "L'identifiant doit contenir au moins 3 caractères." });
 		}
 		if (!/^[a-z0-9_-]+$/.test(username)) {
-			return fail(400, { createError: "L'identifiant ne peut contenir que des lettres minuscules, chiffres, - et _." });
+			return fail(400, {
+				createError: "L'identifiant ne peut contenir que des lettres minuscules, chiffres, - et _."
+			});
 		}
 
 		const validationError = validatePasswordStrength(password);
@@ -105,7 +107,9 @@ export const actions: Actions = {
 				.where(eq(users.role, 'admin'));
 
 			if (value <= 1) {
-				return fail(400, { toggleError: 'Impossible de désactiver le dernier compte administrateur.' });
+				return fail(400, {
+					toggleError: 'Impossible de désactiver le dernier compte administrateur.'
+				});
 			}
 		}
 
@@ -135,7 +139,10 @@ export const actions: Actions = {
 		if (validationError) return fail(400, { resetError: validationError, resetUserId: userId });
 
 		if (newPassword !== confirmPassword) {
-			return fail(400, { resetError: 'Les mots de passe ne correspondent pas.', resetUserId: userId });
+			return fail(400, {
+				resetError: 'Les mots de passe ne correspondent pas.',
+				resetUserId: userId
+			});
 		}
 
 		const [user] = await db

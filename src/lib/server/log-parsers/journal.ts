@@ -4,7 +4,8 @@ export type ParsedLine = {
 	loggedAt: Date;
 };
 
-const JOURNAL_REGEX = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:[+-]\d{2}:?\d{2}|Z)?)\s+\S+\s+(.+)$/;
+const JOURNAL_REGEX =
+	/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:[+-]\d{2}:?\d{2}|Z)?)\s+\S+\s+(.+)$/;
 
 const LEVEL_KEYWORDS: { pattern: RegExp; level: 'ERROR' | 'WARN' | 'INFO' }[] = [
 	{ pattern: /\b(error|fatal|critical|failed|failure|denied|refused|timeout)\b/i, level: 'ERROR' },

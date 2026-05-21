@@ -6,11 +6,13 @@
 	let loading = $state(false);
 </script>
 
-<div class="flex min-h-screen items-center justify-center bg-slate-950 p-4">
-	<div class="w-full max-w-sm">
-		<div class="mb-8 text-center">
-			<div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600">
-				<svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<div class="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-8">
+	<div class="w-full max-w-md">
+		<div class="mb-6 text-center">
+			<div
+				class="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-lg bg-sky-600 shadow-lg shadow-sky-950/40"
+			>
+				<svg class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 					<path
 						stroke-linecap="round"
 						stroke-linejoin="round"
@@ -19,12 +21,13 @@
 					/>
 				</svg>
 			</div>
-			<h1 class="text-2xl font-bold text-white">Intranet</h1>
+			<h1 class="text-2xl font-semibold tracking-tight text-white">Intranet infrastructure</h1>
+			<p class="mt-1 text-sm text-slate-400">Connectez-vous à la supervision du projet</p>
 		</div>
 
 		<form
 			method="post"
-			class="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-6"
+			class="panel space-y-4 p-5 sm:p-6"
 			use:enhance={() => {
 				loading = true;
 				return async ({ update }) => {
@@ -34,7 +37,9 @@
 			}}
 		>
 			{#if form?.error}
-				<div class="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+				<div
+					class="rounded-md border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300"
+				>
 					{form.error}
 				</div>
 			{/if}
@@ -49,7 +54,7 @@
 					type="text"
 					autocomplete="username"
 					required
-					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
+					class="form-field"
 				/>
 			</div>
 
@@ -63,16 +68,22 @@
 					type="password"
 					autocomplete="current-password"
 					required
-					class="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
+					class="form-field"
 				/>
 			</div>
 
-			<button
-				type="submit"
-				disabled={loading}
-				class="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
-			>
-				{loading ? 'Connexion...' : 'Se connecter'}
+			<button type="submit" disabled={loading} class="btn-primary w-full">
+				{#if loading}
+					<svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+						></circle>
+						<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+						></path>
+					</svg>
+					Connexion...
+				{:else}
+					Se connecter
+				{/if}
 			</button>
 		</form>
 	</div>

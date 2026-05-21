@@ -17,13 +17,14 @@ let schedulerHandle: ReturnType<typeof setInterval> | null = null;
 let logCollectorHandle: ReturnType<typeof setInterval> | null = null;
 
 async function runChecks(): Promise<void> {
-	const activeServices = await db
-		.select()
-		.from(services)
-		.where(eq(services.isActive, true));
+	const activeServices = await db.select().from(services).where(eq(services.isActive, true));
 
 	for (const service of activeServices) {
-		let result: { status: 'online' | 'degraded' | 'offline'; latencyMs: number | null; errorMsg: string | null };
+		let result: {
+			status: 'online' | 'degraded' | 'offline';
+			latencyMs: number | null;
+			errorMsg: string | null;
+		};
 
 		try {
 			if (service.checkType === 'dns') {

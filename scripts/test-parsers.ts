@@ -34,7 +34,8 @@ section('parseSyslogLine - DNS (Bind9)');
 }
 
 {
-	const line = 'Apr 29 14:35:00 SRV-DNS named[1234]: error (network unreachable) resolving example.com/A';
+	const line =
+		'Apr 29 14:35:00 SRV-DNS named[1234]: error (network unreachable) resolving example.com/A';
 	const result = parseSyslogLine(line);
 	assert('parse reussit', result !== null);
 	assert('niveau ERROR detecte', result?.level === 'ERROR');
@@ -67,7 +68,8 @@ section('parseSyslogLine - LDAP (OpenLDAP / slapd)');
 
 {
 	// Vrai cas d'erreur slapd : echec d'acces
-	const line = 'Apr 29 14:42:00 SRV-OpenLDAP slapd[5678]: send_ldap_result: conn=1 op=1 p=3 err=49 text=invalid credentials';
+	const line =
+		'Apr 29 14:42:00 SRV-OpenLDAP slapd[5678]: send_ldap_result: conn=1 op=1 p=3 err=49 text=invalid credentials';
 	const result = parseSyslogLine(line);
 	assert('parse reussit', result !== null);
 	assert('niveau ERROR detecte sur invalid credentials', result?.level === 'ERROR');
@@ -100,7 +102,8 @@ section('parseNginxErrorLine - Nextcloud');
 }
 
 {
-	const line = '2026/04/29 14:46:00 [warn] 1234#0: conflicting server name "localhost" on 0.0.0.0:80';
+	const line =
+		'2026/04/29 14:46:00 [warn] 1234#0: conflicting server name "localhost" on 0.0.0.0:80';
 	const result = parseNginxErrorLine(line);
 	assert('parse reussit', result !== null);
 	assert('niveau WARN', result?.level === 'WARN');
@@ -125,7 +128,8 @@ section('parseNginxAccessLine - filtrage HTTP');
 
 {
 	// Erreur 500 : doit etre collectee
-	const line = '192.168.10.1 - - [29/Apr/2026:14:50:00 +0200] "GET /index.php HTTP/1.1" 500 1234 "-" "Mozilla/5.0"';
+	const line =
+		'192.168.10.1 - - [29/Apr/2026:14:50:00 +0200] "GET /index.php HTTP/1.1" 500 1234 "-" "Mozilla/5.0"';
 	const result = parseNginxAccessLine(line);
 	assert('HTTP 500 collecte', result !== null);
 	assert('niveau ERROR pour 500', result?.level === 'ERROR');
@@ -134,7 +138,8 @@ section('parseNginxAccessLine - filtrage HTTP');
 
 {
 	// Erreur 404 : doit etre collectee
-	const line = '192.168.10.1 - - [29/Apr/2026:14:51:00 +0200] "GET /missing HTTP/1.1" 404 512 "-" "curl/7.68"';
+	const line =
+		'192.168.10.1 - - [29/Apr/2026:14:51:00 +0200] "GET /missing HTTP/1.1" 404 512 "-" "curl/7.68"';
 	const result = parseNginxAccessLine(line);
 	assert('HTTP 404 collecte', result !== null);
 	assert('niveau WARN pour 404', result?.level === 'WARN');
@@ -142,14 +147,16 @@ section('parseNginxAccessLine - filtrage HTTP');
 
 {
 	// Succes 200 : NE doit PAS etre collecte (trop de bruit)
-	const line = '192.168.10.1 - - [29/Apr/2026:14:52:00 +0200] "GET /status.php HTTP/1.1" 200 89 "-" "curl/7.68"';
+	const line =
+		'192.168.10.1 - - [29/Apr/2026:14:52:00 +0200] "GET /status.php HTTP/1.1" 200 89 "-" "curl/7.68"';
 	const result = parseNginxAccessLine(line);
 	assert('HTTP 200 ignore (pas de bruit)', result === null);
 }
 
 {
 	// Redirection 301 : NE doit PAS etre collectee
-	const line = '192.168.10.1 - - [29/Apr/2026:14:53:00 +0200] "GET / HTTP/1.1" 301 0 "-" "curl/7.68"';
+	const line =
+		'192.168.10.1 - - [29/Apr/2026:14:53:00 +0200] "GET / HTTP/1.1" 301 0 "-" "curl/7.68"';
 	const result = parseNginxAccessLine(line);
 	assert('HTTP 301 ignore', result === null);
 }
@@ -174,7 +181,8 @@ section('parseJournalLine - Proxmox');
 }
 
 {
-	const line = '2026-05-17T12:11:00+00:00 pve pveproxy[1234]: authentication failure; rhost=192.168.10.50 user=root@pam';
+	const line =
+		'2026-05-17T12:11:00+00:00 pve pveproxy[1234]: authentication failure; rhost=192.168.10.50 user=root@pam';
 	const result = parseJournalLine(line);
 	assert('parse reussit', result !== null);
 	assert('niveau ERROR detecte', result?.level === 'ERROR');

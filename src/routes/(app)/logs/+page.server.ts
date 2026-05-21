@@ -6,6 +6,26 @@ import { eq, desc, and, gte, lte } from 'drizzle-orm';
 
 const PAGE_SIZE = 50;
 
+type AuditRow = {
+	id: string;
+	action: string;
+	targetId: string | null;
+	metadata: unknown;
+	ipAddress: string | null;
+	createdAt: Date;
+	actorUsername: string | null;
+	actorDisplayName: string | null;
+};
+
+type ServiceLogRow = {
+	id: string;
+	level: string;
+	message: string;
+	loggedAt: Date;
+	collectedAt: Date;
+	serviceName: string | null;
+};
+
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (locals.user?.role !== 'admin') redirect(302, '/dashboard');
 
@@ -20,28 +40,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const toDate = filterTo ? new Date(filterTo) : null;
 	if (toDate) toDate.setHours(23, 59, 59, 999);
 
-	let auditRows: typeof auditData = [];
-	let serviceLogRows: typeof serviceLogData = [];
-
-	const auditData: {
-		id: string;
-		action: string;
-		targetId: string | null;
-		metadata: unknown;
-		ipAddress: string | null;
-		createdAt: Date;
-		actorUsername: string | null;
-		actorDisplayName: string | null;
-	}[] = [];
-
-	const serviceLogData: {
-		id: string;
-		level: string;
-		message: string;
-		loggedAt: Date;
-		collectedAt: Date;
-		serviceName: string | null;
-	}[] = [];
+	let auditRows: AuditRow[] = [];
+	let serviceLogRows: ServiceLogRow[] = [];
 
 	if (tab === 'audit') {
 		const conditions = [];
@@ -103,6 +103,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		auditLogs: auditRows,
 		serviceLogs: serviceLogRows,
 		serviceList,
-		filters: { action: filterAction, service: filterService, level: filterLevel, from: filterFrom, to: filterTo }
+		filters: {
+			action: filterAction,
+			service: filterService,
+			level: filterLevel,
+			from: filterFrom,
+			to: filterTo
+		}
 	};
 };

@@ -28,12 +28,7 @@ export const load: PageServerLoad = async () => {
 			const last24h = await db
 				.select({ status: serviceChecks.status })
 				.from(serviceChecks)
-				.where(
-					and(
-						eq(serviceChecks.serviceId, service.id),
-						gte(serviceChecks.checkedAt, since)
-					)
-				);
+				.where(and(eq(serviceChecks.serviceId, service.id), gte(serviceChecks.checkedAt, since)));
 
 			const total = last24h.length;
 			const onlineCount = last24h.filter((c) => c.status === 'online').length;

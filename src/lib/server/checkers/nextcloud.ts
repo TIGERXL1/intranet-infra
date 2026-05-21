@@ -15,21 +15,20 @@ export type CheckResult = {
 function httpGet(url: string): Promise<{ body: string; statusCode: number }> {
 	return new Promise((resolve, reject) => {
 		const parsed = new URL(url);
-		const agent = parsed.protocol === 'https:'
-			? new https.Agent({ rejectUnauthorized: TLS_VERIFY })
-			: undefined;
+		const agent =
+			parsed.protocol === 'https:'
+				? new https.Agent({ rejectUnauthorized: TLS_VERIFY })
+				: undefined;
 
 		const lib = parsed.protocol === 'https:' ? https : http;
 
-		const req = lib.get(
-			url,
-			{ agent, timeout: TIMEOUT_MS },
-			(res) => {
-				let body = '';
-				res.on('data', (chunk: Buffer) => { body += chunk.toString(); });
-				res.on('end', () => resolve({ body, statusCode: res.statusCode ?? 0 }));
-			}
-		);
+		const req = lib.get(url, { agent, timeout: TIMEOUT_MS }, (res) => {
+			let body = '';
+			res.on('data', (chunk: Buffer) => {
+				body += chunk.toString();
+			});
+			res.on('end', () => resolve({ body, statusCode: res.statusCode ?? 0 }));
+		});
 
 		req.on('timeout', () => {
 			req.destroy();

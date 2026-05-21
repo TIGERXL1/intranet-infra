@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -17,22 +19,22 @@
 	};
 
 	const ACTION_STYLE: Record<string, string> = {
-		'auth.login.success': 'bg-green-400/10 text-green-400',
-		'auth.login.failure': 'bg-red-400/10 text-red-400',
-		'auth.logout': 'bg-slate-400/10 text-slate-400',
-		'user.create': 'bg-blue-400/10 text-blue-400',
-		'user.activate': 'bg-green-400/10 text-green-400',
-		'user.deactivate': 'bg-yellow-400/10 text-yellow-400',
-		'user.delete': 'bg-red-400/10 text-red-400',
-		'user.password_reset': 'bg-orange-400/10 text-orange-400',
-		'user.profile_update': 'bg-blue-400/10 text-blue-400',
-		'user.password_change': 'bg-orange-400/10 text-orange-400'
+		'auth.login.success': 'bg-emerald-400/10 text-emerald-300',
+		'auth.login.failure': 'bg-rose-400/10 text-rose-300',
+		'auth.logout': 'bg-slate-400/10 text-slate-300',
+		'user.create': 'bg-sky-400/10 text-sky-300',
+		'user.activate': 'bg-emerald-400/10 text-emerald-300',
+		'user.deactivate': 'bg-amber-400/10 text-amber-300',
+		'user.delete': 'bg-rose-400/10 text-rose-300',
+		'user.password_reset': 'bg-orange-400/10 text-orange-300',
+		'user.profile_update': 'bg-sky-400/10 text-sky-300',
+		'user.password_change': 'bg-orange-400/10 text-orange-300'
 	};
 
 	const LEVEL_STYLE: Record<string, string> = {
-		INFO: 'bg-blue-400/10 text-blue-400',
-		WARN: 'bg-yellow-400/10 text-yellow-400',
-		ERROR: 'bg-red-400/10 text-red-400'
+		INFO: 'bg-sky-400/10 text-sky-300',
+		WARN: 'bg-amber-400/10 text-amber-300',
+		ERROR: 'bg-rose-400/10 text-rose-300'
 	};
 
 	const ALL_ACTIONS = Object.keys(ACTION_LABELS);
@@ -53,13 +55,22 @@
 	});
 
 	const formatDate = (d: Date | null) =>
-		d ? new Date(d).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '-';
+		d
+			? new Date(d).toLocaleString('fr-FR', {
+					day: '2-digit',
+					month: '2-digit',
+					year: 'numeric',
+					hour: '2-digit',
+					minute: '2-digit',
+					second: '2-digit'
+				})
+			: '-';
 
 	const formatActor = (log: (typeof data.auditLogs)[number]) =>
 		log.actorUsername ? (log.actorDisplayName ?? log.actorUsername) : 'Système';
 
 	const buildUrl = (overrides: Record<string, string | number>) => {
-		const p = new URLSearchParams();
+		const p = new SvelteURLSearchParams();
 		p.set('tab', data.tab);
 		if (filterAction) p.set('action', filterAction);
 		if (filterService) p.set('service', filterService);
@@ -69,170 +80,205 @@
 		Object.entries(overrides).forEach(([k, v]) => p.set(k, String(v)));
 		return `/logs?${p.toString()}`;
 	};
+
+	type LogsHref = `/logs?${string}`;
 </script>
 
-<div class="p-8">
-	<header class="mb-8">
-		<h1 class="text-2xl font-bold text-white">Journaux</h1>
-		<p class="mt-1 text-sm text-slate-400">Accès réservé aux administrateurs</p>
+<div class="page-shell">
+	<header class="page-header">
+		<div>
+			<h1 class="page-title">Journaux</h1>
+			<p class="page-subtitle">Accès réservé aux administrateurs</p>
+		</div>
 	</header>
 
-	<!-- Onglets -->
-	<div class="mb-6 flex gap-1 rounded-xl border border-slate-800 bg-slate-900 p-1 w-fit">
+	<div
+		class="mb-5 inline-flex w-full gap-1 rounded-lg border border-slate-800 bg-slate-900 p-1 sm:w-auto"
+	>
 		<a
-			href="/logs?tab=audit"
-			class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {data.tab === 'audit' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'}"
+			href={resolve('/logs?tab=audit')}
+			class="flex-1 rounded-md px-3 py-2 text-center text-sm font-medium transition-colors sm:flex-none sm:px-4 {data.tab ===
+			'audit'
+				? 'bg-sky-600 text-white'
+				: 'text-slate-400 hover:text-slate-200'}"
 		>
 			Activité intranet
 		</a>
 		<a
-			href="/logs?tab=services"
-			class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {data.tab === 'services' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'}"
+			href={resolve('/logs?tab=services')}
+			class="flex-1 rounded-md px-3 py-2 text-center text-sm font-medium transition-colors sm:flex-none sm:px-4 {data.tab ===
+			'services'
+				? 'bg-sky-600 text-white'
+				: 'text-slate-400 hover:text-slate-200'}"
 		>
 			Journaux services
 		</a>
 	</div>
 
-	<!-- Filtres -->
-	<form method="get" class="mb-6 flex flex-wrap gap-3">
+	<form method="get" class="panel mb-6 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-6">
 		<input type="hidden" name="tab" value={data.tab} />
 
 		{#if data.tab === 'audit'}
-			<select name="action" bind:value={filterAction}
-				class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none">
+			<select name="action" bind:value={filterAction} class="form-field lg:col-span-2">
 				<option value="">Toutes les actions</option>
-				{#each ALL_ACTIONS as action}
+				{#each ALL_ACTIONS as action (action)}
 					<option value={action}>{ACTION_LABELS[action]}</option>
 				{/each}
 			</select>
 		{:else}
-			<select name="service" bind:value={filterService}
-				class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none">
+			<select name="service" bind:value={filterService} class="form-field lg:col-span-2">
 				<option value="">Tous les services</option>
-				{#each data.serviceList as svc}
+				{#each data.serviceList as svc (svc.id)}
 					<option value={svc.id}>{svc.name}</option>
 				{/each}
 			</select>
-			<select name="level" bind:value={filterLevel}
-				class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none">
+			<select name="level" bind:value={filterLevel} class="form-field">
 				<option value="">Tous les niveaux</option>
-				{#each LEVELS as lvl}
+				{#each LEVELS as lvl (lvl)}
 					<option value={lvl}>{lvl}</option>
 				{/each}
 			</select>
 		{/if}
 
-		<input type="date" name="from" bind:value={filterFrom}
-			class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-		<input type="date" name="to" bind:value={filterTo}
-			class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+		<input type="date" name="from" bind:value={filterFrom} class="form-field" />
+		<input type="date" name="to" bind:value={filterTo} class="form-field" />
 
-		<button type="submit"
-			class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500">
-			Filtrer
-		</button>
-		<a href="/logs?tab={data.tab}"
-			class="rounded-lg px-4 py-2 text-sm text-slate-400 hover:bg-slate-800">
-			Réinitialiser
-		</a>
+		<div class="flex gap-2 sm:col-span-2 lg:col-span-2">
+			<button type="submit" class="btn-primary flex-1">Filtrer</button>
+			<a href={resolve(`/logs?tab=${data.tab}`)} class="btn-ghost flex-1">Réinitialiser</a>
+		</div>
 	</form>
 
-	<!-- Contenu onglet audit -->
 	{#if data.tab === 'audit'}
-		<div class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
+		<div class="table-wrap">
 			{#if data.auditLogs.length === 0}
-				<div class="py-16 text-center text-slate-500">Aucun journal ne correspond aux filtres.</div>
+				<div class="py-16 text-center text-sm text-slate-500">
+					Aucun journal ne correspond aux filtres.
+				</div>
 			{:else}
-				<table class="w-full">
+				<table class="data-table min-w-[980px]">
 					<thead>
-						<tr class="border-b border-slate-800">
-							<th class="w-44 px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Date</th>
-							<th class="px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Action</th>
-							<th class="px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Acteur</th>
-							<th class="px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Cible / Détail</th>
-							<th class="px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">IP</th>
+						<tr>
+							<th class="w-48">Date</th>
+							<th>Action</th>
+							<th>Acteur</th>
+							<th>Cible / Détail</th>
+							<th>IP</th>
 						</tr>
 					</thead>
-					<tbody class="divide-y divide-slate-800/50">
-						{#each data.auditLogs as log}
-							<tr class="transition-colors hover:bg-slate-800/30">
-								<td class="px-6 py-3.5 font-mono text-xs text-slate-500">{formatDate(log.createdAt)}</td>
-								<td class="px-4 py-3.5">
-									<span class="rounded px-2 py-0.5 text-xs font-medium {ACTION_STYLE[log.action] ?? 'bg-slate-700 text-slate-300'}">
+					<tbody class="divide-y divide-slate-800/60">
+						{#each data.auditLogs as log (log.id)}
+							<tr class="transition-colors hover:bg-slate-800/35">
+								<td class="font-mono text-xs whitespace-nowrap text-slate-500"
+									>{formatDate(log.createdAt)}</td
+								>
+								<td>
+									<span
+										class="rounded px-2 py-0.5 text-xs font-medium {ACTION_STYLE[log.action] ??
+											'bg-slate-700 text-slate-300'}"
+									>
 										{ACTION_LABELS[log.action] ?? log.action}
 									</span>
 								</td>
-								<td class="px-4 py-3.5 text-sm text-slate-300">{formatActor(log)}</td>
-								<td class="px-4 py-3.5 text-sm text-slate-400">
+								<td class="text-slate-300">{formatActor(log)}</td>
+								<td class="max-w-md text-slate-400">
 									{#if log.metadata && typeof log.metadata === 'object'}
 										{@const meta = log.metadata as Record<string, unknown>}
-										{#if meta.username}<span class="text-slate-300">@{meta.username}</span>{/if}
-										{#if meta.role}<span class="ml-2 text-xs text-slate-500">({meta.role})</span>{/if}
-										{#if meta.reason}<span class="text-slate-500">{meta.reason}</span>{/if}
+										<div class="flex flex-wrap items-center gap-2">
+											{#if meta.username}<span class="text-slate-300">@{meta.username}</span>{/if}
+											{#if meta.role}<span class="text-xs text-slate-500">({meta.role})</span>{/if}
+											{#if meta.reason}<span class="break-words text-slate-500">{meta.reason}</span
+												>{/if}
+										</div>
+									{:else}
+										<span class="text-slate-600">-</span>
 									{/if}
 								</td>
-								<td class="px-6 py-3.5 font-mono text-xs text-slate-500">{log.ipAddress ?? '-'}</td>
+								<td class="font-mono text-xs whitespace-nowrap text-slate-500"
+									>{log.ipAddress ?? '-'}</td
+								>
 							</tr>
 						{/each}
 					</tbody>
 				</table>
-				<div class="flex items-center justify-between border-t border-slate-800 px-6 py-4">
+				<div
+					class="flex items-center justify-between gap-3 border-t border-slate-800 px-4 py-4 sm:px-6"
+				>
 					<span class="text-xs text-slate-500">Page {data.page}</span>
 					<div class="flex gap-2">
 						{#if data.page > 1}
-							<a href={buildUrl({ page: data.page - 1 })} class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">Précédent</a>
+							<a
+								href={resolve(buildUrl({ page: data.page - 1 }) as LogsHref)}
+								class="btn-secondary min-h-8 px-3 py-1.5 text-xs">Précédent</a
+							>
 						{/if}
 						{#if data.hasMore}
-							<a href={buildUrl({ page: data.page + 1 })} class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">Suivant</a>
+							<a
+								href={resolve(buildUrl({ page: data.page + 1 }) as LogsHref)}
+								class="btn-secondary min-h-8 px-3 py-1.5 text-xs">Suivant</a
+							>
 						{/if}
 					</div>
 				</div>
 			{/if}
 		</div>
-
-	<!-- Contenu onglet services -->
 	{:else}
-		<div class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
+		<div class="table-wrap">
 			{#if data.serviceLogs.length === 0}
-				<div class="py-16 text-center text-slate-500">
+				<div class="py-16 text-center text-sm text-slate-500">
 					Aucun journal de service disponible.
 					{#if data.serviceList.length > 0}
-						<p class="mt-2 text-xs">La collecte SSH tourne toutes les 5 minutes depuis le serveur de production.</p>
+						<p class="mt-2 text-xs">
+							La collecte SSH tourne toutes les 5 minutes depuis le serveur de production.
+						</p>
 					{/if}
 				</div>
 			{:else}
-				<table class="w-full">
+				<table class="data-table min-w-[980px]">
 					<thead>
-						<tr class="border-b border-slate-800">
-							<th class="w-44 px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Horodatage</th>
-							<th class="w-24 px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Niveau</th>
-							<th class="w-32 px-4 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Service</th>
-							<th class="px-6 py-3.5 text-left text-xs font-semibold tracking-wide text-slate-400 uppercase">Message</th>
+						<tr>
+							<th class="w-48">Horodatage</th>
+							<th class="w-28">Niveau</th>
+							<th class="w-40">Service</th>
+							<th>Message</th>
 						</tr>
 					</thead>
-					<tbody class="divide-y divide-slate-800/50">
-						{#each data.serviceLogs as log}
-							<tr class="transition-colors hover:bg-slate-800/30">
-								<td class="px-6 py-3.5 font-mono text-xs text-slate-500">{formatDate(log.loggedAt)}</td>
-								<td class="px-4 py-3.5">
-									<span class="rounded px-2 py-0.5 text-xs font-medium {LEVEL_STYLE[log.level] ?? 'bg-slate-700 text-slate-300'}">
+					<tbody class="divide-y divide-slate-800/60">
+						{#each data.serviceLogs as log (log.id)}
+							<tr class="transition-colors hover:bg-slate-800/35">
+								<td class="font-mono text-xs whitespace-nowrap text-slate-500"
+									>{formatDate(log.loggedAt)}</td
+								>
+								<td>
+									<span
+										class="rounded px-2 py-0.5 text-xs font-medium {LEVEL_STYLE[log.level] ??
+											'bg-slate-700 text-slate-300'}"
+									>
 										{log.level}
 									</span>
 								</td>
-								<td class="px-4 py-3.5 text-sm text-slate-400">{log.serviceName ?? '-'}</td>
-								<td class="px-6 py-3.5 text-sm text-slate-200">{log.message}</td>
+								<td class="text-slate-400">{log.serviceName ?? '-'}</td>
+								<td class="max-w-4xl break-words text-slate-200">{log.message}</td>
 							</tr>
 						{/each}
 					</tbody>
 				</table>
-				<div class="flex items-center justify-between border-t border-slate-800 px-6 py-4">
+				<div
+					class="flex items-center justify-between gap-3 border-t border-slate-800 px-4 py-4 sm:px-6"
+				>
 					<span class="text-xs text-slate-500">Page {data.page}</span>
 					<div class="flex gap-2">
 						{#if data.page > 1}
-							<a href={buildUrl({ page: data.page - 1 })} class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">Précédent</a>
+							<a
+								href={resolve(buildUrl({ page: data.page - 1 }) as LogsHref)}
+								class="btn-secondary min-h-8 px-3 py-1.5 text-xs">Précédent</a
+							>
 						{/if}
 						{#if data.hasMore}
-							<a href={buildUrl({ page: data.page + 1 })} class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800">Suivant</a>
+							<a
+								href={resolve(buildUrl({ page: data.page + 1 }) as LogsHref)}
+								class="btn-secondary min-h-8 px-3 py-1.5 text-xs">Suivant</a
+							>
 						{/if}
 					</div>
 				</div>

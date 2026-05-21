@@ -84,13 +84,20 @@ function resolveLogHost(service: { id: string; host: string; checkType: string }
 	return serviceEnv ?? typeEnv ?? hostFromServiceTarget(service.host);
 }
 
-async function collectForService(service: { id: string; host: string; checkType: string }): Promise<void> {
+async function collectForService(service: {
+	id: string;
+	host: string;
+	checkType: string;
+}): Promise<void> {
 	let rawLines: string[] = [];
 	const logHost = resolveLogHost(service);
 
 	try {
 		if (service.checkType === 'dns') {
-			const out = await sshExec(logHost, `tail -n ${LOG_LINES} /var/log/syslog | grep -Ei 'named|bind9'`);
+			const out = await sshExec(
+				logHost,
+				`tail -n ${LOG_LINES} /var/log/syslog | grep -Ei 'named|bind9'`
+			);
 			rawLines = out.split('\n').filter(Boolean);
 		} else if (service.checkType === 'ldap') {
 			const out = await sshExec(logHost, `tail -n ${LOG_LINES} /var/log/syslog | grep -i slapd`);
@@ -101,8 +108,14 @@ async function collectForService(service: { id: string; host: string; checkType:
 				sshExec(logHost, `tail -n ${LOG_LINES} /var/log/nginx/access.log`)
 			]);
 			rawLines = [
-				...errorOut.split('\n').filter(Boolean).map((l) => `ERROR_LOG:${l}`),
-				...accessOut.split('\n').filter(Boolean).map((l) => `ACCESS_LOG:${l}`)
+				...errorOut
+					.split('\n')
+					.filter(Boolean)
+					.map((l) => `ERROR_LOG:${l}`),
+				...accessOut
+					.split('\n')
+					.filter(Boolean)
+					.map((l) => `ACCESS_LOG:${l}`)
 			];
 		} else if (service.checkType === 'proxmox') {
 			const out = await sshExec(
@@ -113,7 +126,10 @@ async function collectForService(service: { id: string; host: string; checkType:
 		}
 	} catch (err) {
 		// SSH connection failed - not fatal, will retry at next collection cycle
-		console.error(`[ssh-collector] ${service.checkType} (${logHost}):`, err instanceof Error ? err.message : err);
+		console.error(
+			`[ssh-collector] ${service.checkType} (${logHost}):`,
+			err instanceof Error ? err.message : err
+		);
 		return;
 	}
 
@@ -157,10 +173,7 @@ async function collectForService(service: { id: string; host: string; checkType:
 }
 
 export async function collectServiceLogs(): Promise<void> {
-	const activeServices = await db
-		.select()
-		.from(services)
-		.where(eq(services.isActive, true));
+	const activeServices = await db.select().from(services).where(eq(services.isActive, true));
 
 	await Promise.allSettled(activeServices.map((s) => collectForService(s)));
 
